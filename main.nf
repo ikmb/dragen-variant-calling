@@ -40,7 +40,7 @@ if (params.kit) {
 	log.info "Kit:		${params.kit}"
 }
 
-process makeGVCF {
+process make_gvcf {
 
 	label 'dragen'
 
@@ -53,7 +53,8 @@ process makeGVCF {
 
 	output:
 	file("${outdir}/*.gvcf.gz") into Gvcf
-	file("${outdir}/*")
+	file("${outdir}/*.bam") into Bam
+	file("${outdir}/*.csv") into BamQC
 
 	script:
 	gvcf = sampleID + ".gvcf.gz"
@@ -84,7 +85,7 @@ process makeGVCF {
 	"""
 }
 
-process mergeGVCF {
+process merge_gvcfs {
 
 	label 'dragen'
 
@@ -105,7 +106,7 @@ process mergeGVCF {
 	script:
 	def options = ""
 	if (params.mode == "wes") {
-		options = "--gg-regions = ${bed}"
+		options = "--gg-regions ${bed}"
 	}
 	merged_gvcf = run_name + ".gvcf.gz"
 
@@ -166,4 +167,5 @@ process joint_call {
 		mv results/*vcf.gz* . 
 	"""
 }
+
 
