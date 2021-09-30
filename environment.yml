@@ -1,0 +1,14 @@
+# You can use this file to create a conda environment for this pipeline:
+#   conda env create -f environment.yml
+name: dragen-variant-calling-1.0
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - fastqc=0.11.8
+  - picard=2.18.11
+  - multiqc=1.9
+  - samtools=1.9
+  - bcftools=1.9
+  - htslib=1.9
