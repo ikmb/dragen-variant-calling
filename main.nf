@@ -10,6 +10,10 @@ if (params.mode == "wgs") {
 	TargetToHS = Channel.empty()
 	BaitsToHS = Channel.empty()
 
+	Channel.fromPath(file(BED))
+	ifEmpty { exit 1; "Could not find the BED interval file..." }
+	.set { BedIntervals }
+
 } else if (params.mode == "wes" && params.kit ) {
 	BED = params.bed ?: params.genomes[params.genome].kits[ params.kit ].bed
 	out_format = "bam"
@@ -23,6 +27,10 @@ if (params.mode == "wgs") {
 	Channel.fromPath(baits)
 		.ifEmpty {exit 1; "Could not find the bait intervals for this exome kit..." }
 		.set { BaitsToHS }
+
+	Channel.fromPath(file(BED))
+        .ifEmpty { exit 1; "Could not find the BED interval file..." }
+        .set { BedIntervals }
 
 } else {
 	exit 1, "Must specifiy if you are running a WGS (--mode wgs) or WES (--mode wes and --kit) analysis"
@@ -40,35 +48,60 @@ Channel.fromPath( file(REF) )
  
 Channel.fromPath( file(BED) )
 	.ifEmpty { exit 1; "Target BED file not found, existing..." }
-	.into { target_gvcf; target_joint_calling ; target:vcf; target_merge_vcf; bed_to_coverage }
+	.into { target_gvcf; target_joint_calling ; target_vcf; target_merge_vcf; bed_to_coverage }
 
 Channel.from(file(params.samples))
        	.splitCsv(sep: ';', header: true)
-	.set { alignReads }
+	.map{ row-> tuple(row.IndivID,row.SampleID,file(row.R1),file(row.R2)) }
+	.set { Reads }
 
 log.info "Variant calling DRAGEN"
 log.info " - devel version -"
 log.info "----------------------"
 log.info "Assembly:     	${params.genome}"
+log.info "Intervals:	${BED}"
 log.info "Mode:		${params.mode}"
 if (params.kit) {
 	log.info "Kit:		${params.kit}"
 }
 
+// make sure the dragen is ready for processing
+process dragen_reset {
+
+	label 'dragen'
+
+	output:
+	file(dragen_ok) into DragenReset
+
+	script:
+	dragen_ok = "ok.txt"
+
+	"""
+		touch $dragen_ok
+	"""		
+}
+
+// We group reads by sampleID so we can deal with multi-lane libraries
+alignReads = Reads.groupTuple(by: [0,1] )
+
 if (params.joint_calling) {	
+
 	process make_gvcf {
+		
+		tag "${sampleID}"
 
 		label 'dragen'
 
-		publishDir "${params.outdir}/${libraryID}/", mode: 'copy'
+		publishDir "${params.outdir}/${sampleID}/", mode: 'copy'
 
 		input:
-		set indivID, sampleID, libraryID, rgID, platform_unit, platform, platform_model, center, date, fastqR1, fastqR2 from alignReads
+		set val(indivID), val(sampleID), file(lreads),file(rreads) from alignReads
 		file(bed) from target_gvcf.collect()
+		file(dragen_reset) from DragenReset.collect()
 
 		output:
 		file("${outdir}/*.gvcf.gz") into Gvcf
-		set val(indivID),val(sampleID),file("${outdir}/*.bam"),file("${outdir}/*.bai") into Bam
+		set val(indivID),val(sampleID),file("${outdir}/*.bam"),file("${outdir}/*.bai") into Bam, BamToCoverage
 		file("${outdir}/*.csv") into BamQC
 
 		script:
@@ -77,10 +110,13 @@ if (params.joint_calling) {
 
 		"""
 		mkdir -p $outdir
+
+		dragen_file_list.pl > files.csv
+
 		/opt/edico/bin/dragen -f \
 			-r $REF_DIR \
-			-1 $fastqR1 \
-			-2 $fastqR2 \
+			--fastq-list files.csv \
+			--fastq-list-sample-id $sampleID \
 			--read-trimmers none \
 			--enable-variant-caller true \
 			--enable-map-align-output true \
@@ -89,11 +125,6 @@ if (params.joint_calling) {
 			--vc-target-bed $bed \
 			--vc-emit-ref-confidence GVCF \
 			--intermediate-results-dir ${params.dragen_tmp} \
-			--RGID $rgID \
-			--RGSM $sampleID \
-			--RGCN $center \
-			--RGDT $date \
-			--RGLB $libraryID \
 			--output-directory $outdir \
 			--output-file-prefix $sampleID \
 			--output-format $out_format
@@ -181,17 +212,20 @@ if (params.joint_calling) {
 
 	process make_vcf {
 
+                tag "${sampleID}"
+
 		label 'dragen'
 
-                publishDir "${params.outdir}/${libraryID}/", mode: 'copy'
+                publishDir "${params.outdir}/${sampleID}/", mode: 'copy'
 
                 input:
-                set indivID, sampleID, libraryID, rgID, platform_unit, platform, platform_model, center, date, fastqR1, fastqR2 from alignReads
+                set val(indivID), val(sampleID), file(lreads),file(rreads) from alignReads
                 file(bed) from target_vcf.collect()
+                file(dragen_reset) from DragenReset.collect()
 
                 output:
                 file(vcf) into Vcf
-                set val(indivID),val(sampleID),file(bam),file(bai) into Bam
+                set val(indivID),val(sampleID),file(bam),file(bai) into Bam,BamToCoverage
                 file("${outdir}/*.csv") into BamQC
 
                 script:
@@ -202,10 +236,13 @@ if (params.joint_calling) {
 
                 """
                 mkdir -p $outdir
+		
+		dragen_file_list.pl > files.csv
+
                 /opt/edico/bin/dragen -f \
                         -r $REF_DIR \
-                        -1 $fastqR1 \
-                        -2 $fastqR2 \
+			--fastq-list files.csv \
+                        --fastq-list-sample-id $sampleID \
                         --read-trimmers none \
                         --enable-variant-caller true \
                         --enable-map-align-output true \
@@ -213,11 +250,6 @@ if (params.joint_calling) {
                         --enable-duplicate-marking true \
                         --vc-target-bed $bed \
                         --intermediate-results-dir ${params.dragen_tmp} \
-                        --RGID $rgID \
-			--RGSM $sampleID \
-                        --RGCN $center \
-                        --RGDT $date \
-                        --RGLB $libraryID \
                         --output-directory $outdir \
                         --output-file-prefix $sampleID \
                         --output-format $out_format
@@ -231,9 +263,11 @@ if (params.joint_calling) {
 
 if (params.qc)  {
 
-	if (params.wes) {
+	if (params.mode == "wes") {
 
 		process hc_metrics {
+
+			label 'default'
 
 			publishDir "${params.outdir}/${indivID}/${sampleID}/Processing/Picard_Metrics", mode: 'copy'
 
@@ -257,15 +291,19 @@ if (params.qc)  {
 	        	        PER_TARGET_COVERAGE=${outfile_per_target} \
 	        	        TARGET_INTERVALS=${targets} \
         	        	BAIT_INTERVALS=${baits} \
-	        	        REFERENCE_SEQUENCE=${FASTA} \
+	        	        REFERENCE_SEQUENCE=${REF} \
         	        	MINIMUM_MAPPING_QUALITY=$params.min_mapq \
 	                	TMP_DIR=tmp
 	        	"""
 		}
 
+	} else {
+		HybridCaptureMetricsOutput = Channel.empty()
 	}
 
 	process coverage {
+
+		label 'default'
 
 		publishDir "${params.outdir}/${indivID}/${sampleID}/Processing/", mode: 'copy'		
 	
@@ -284,5 +322,26 @@ if (params.qc)  {
         	"""
                 	mosdepth -t ${task.cpus} -n -f $REF -x -Q 10 -b $bed $base_name $bam
 	        """
+	}
+
+	process multiqc {
+
+		label 'default'
+
+		publishDir "${params.outdir}/MultiQC", mode: 'copy'
+
+		input:
+		file('*') from Coverage.collect()
+		file('*') from HybridCaptureMetricsOutput.collect()
+	
+		output:
+		file("multiqc_report.html") into MultiQC
+
+		script:
+		
+		"""
+			multiqc . 
+		"""	
+
 	}
 }

@@ -8,7 +8,7 @@ channels:
 dependencies:
   - fastqc=0.11.8
   - picard=2.18.11
-  - multiqc=1.9
-  - samtools=1.9
-  - bcftools=1.9
-  - htslib=1.9
+  - multiqc=1.12
+  - samtools=1.13
+  - bcftools=1.13
+  - htslib=1.13

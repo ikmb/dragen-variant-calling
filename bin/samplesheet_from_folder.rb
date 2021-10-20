@@ -11,8 +11,6 @@ opts = OptionParser.new()
 opts.banner = "Reads Fastq files from a folder and writes a sample sheet to STDOUT"
 opts.separator ""
 opts.on("-f","--folder", "=FOLDER","Folder to scan") {|argument| options.folder = argument }
-opts.on("-c","--centre", "=CENTRE","Name of sequencing centre") {|argument| options.centre = argument }
-opts.on("-p","--platform", "=PLATFORM","Name of sequencing instrument") {|argument| options.platform = argument }
 opts.on("-s","--sanity", "Perform sanity check of md5 sums") { options.sanity = true }
 opts.on("-h","--help","Display the usage information") {
  puts opts
@@ -35,7 +33,7 @@ warn "Performing sanity check on md5sums" if options.sanity
 
 options.platform ? sequencer = options.platform : sequencer = "NextSeq500
 "
-puts "IndivID;SampleID;libraryID;rgID;rgPU;platform;platform_model;Center;Date;R1;R2"
+puts "IndivID;SampleID;R1;R2"
 
 #G00076-L2_S19_L003_R1_001.fastq.gz
 
@@ -69,14 +67,7 @@ groups.each do |group, files|
         	e = `zcat #{left} | head -n1 `
 		header = e
 
-        	instrument,run_id,flowcell_id,lane,tile,x,y = header.split(" ")[0].split(":")
-
-		index = header.split(" ")[-1].split(":")[-1]
-        	readgroup = flowcell_id + "." + lane + "." + library 
-
-        	pgu = flowcell_id + "." + lane + "." + index
-
-        	puts "Indiv_#{individual};Sample_#{sample};#{library};#{readgroup};#{pgu};Illumina;#{options.platform};#{center};#{date};#{left};#{right}"
+        	puts "#{sample};#{sample};#{left};#{right}"
 	end
 end
 
