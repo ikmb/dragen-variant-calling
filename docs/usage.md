@@ -5,14 +5,14 @@
 A basic command to execute the pipeline will look as follows:
 
 ```bash
-nextflow run ikmb/dragen-variant-calling --samples Samples.csv --assembly GRCh38 --qc
+nextflow run ikmb/dragen-variant-calling --samples Samples.csv --assembly hg38 --qc
 ```
 
 Information on the command line options are listed in the following:
 
 ## Options
 
-### `--samples` [ CSV filer (mandatory ]
+### `--samples` [ CSV file (mandatory ]
 A samplesheet including information about the read files. The easiest way to generate this file is the included script `bin/samplesheet_from_folder.rb`:
 
 ```bash
@@ -39,3 +39,10 @@ For WES samples, the enrichment kit can be specified to enable targetted analysi
 
 ### `--qc` [ true | false (default)]
 Whether to generate MultiQC run metrics. If the mode is 'wgs', global coverage stats are produced across all chromosomes. If the mode is 'wes', the 
+
+### `--cnv' [ true | false (default) ]
+Enable CNV calling. This is currently only recommended for WGS data as there is no built-in way to normalize single-sample exome data sets. 
+
+###  `--sv` [ true | false (default) ]
+Enable structural variant calling. This is only recommended for WGS data.
+
