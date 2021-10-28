@@ -9,10 +9,7 @@ if (params.mode == "wgs") {
 
 	TargetToHS = Channel.empty()
 	BaitsToHS = Channel.empty()
-
-	Channel.fromPath(file(BED))
-	ifEmpty { exit 1; "Could not find the BED interval file..." }
-	.set { BedIntervals }
+	BedIntervals = Channel.empty()
 
 } else if (params.mode == "wes" && params.kit ) {
 	BED = params.bed ?: params.genomes[params.genome].kits[ params.kit ].bed
@@ -46,9 +43,7 @@ Channel.fromPath( file(REF) )
 	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
 	.set { ref_fasta }
  
-Channel.fromPath( file(BED) )
-	.ifEmpty { exit 1; "Target BED file not found, existing..." }
-	.into { target_gvcf; target_joint_calling ; target_vcf; target_merge_vcf; bed_to_coverage }
+BedIntervals.into { target_gvcf; target_joint_calling ; target_vcf; target_merge_vcf }
 
 Channel.from(file(params.samples))
        	.splitCsv(sep: ';', header: true)
@@ -61,6 +56,8 @@ log.info "----------------------"
 log.info "Assembly:     	${params.genome}"
 log.info "Intervals:	${BED}"
 log.info "Mode:		${params.mode}"
+log.info "CNV calling:	${params.cnv}"
+log.info "SV calling:	${params.sv}"
 if (params.kit) {
 	log.info "Kit:		${params.kit}"
 }
@@ -103,11 +100,34 @@ if (params.joint_calling) {
 		file("${outdir}/*.gvcf.gz") into Gvcf
 		set val(indivID),val(sampleID),file("${outdir}/*.bam"),file("${outdir}/*.bai") into Bam, BamToCoverage
 		file("${outdir}/*.csv") into BamQC
+		file(log) into gvcf_logs
 
 		script:
 		gvcf = sampleID + ".gvcf.gz"
 		outdir = sampleID + "_results"
+		log = sampleID + "_gvcf.log"
 
+		def options = ""
+		if (params.mode == "wes") {
+			options = "--vc-target-bed $bed "
+			if (params.cnv) {
+				options += "--cnv-target-bed $bed "
+			}
+			if (params.sv) {
+				options += "--sv-target-bed $bed "
+			}
+		} else {
+			if (params.cnv) {
+				options += "--cnv-enable-self-normalization true --cnv-wgs-interval-width 250"
+			}
+		}
+		  
+		if (params.cnv) {
+			options += "--enable-cnv true "
+		}
+		if (params.sv) {
+			options += "--enable-sv true "
+		}
 		"""
 		mkdir -p $outdir
 
@@ -122,12 +142,12 @@ if (params.joint_calling) {
 			--enable-map-align-output true \
 			--enable-map-align true \
 			--enable-duplicate-marking true \
-			--vc-target-bed $bed \
+			$options \
 			--vc-emit-ref-confidence GVCF \
 			--intermediate-results-dir ${params.dragen_tmp} \
 			--output-directory $outdir \
 			--output-file-prefix $sampleID \
-			--output-format $out_format
+			--output-format $out_format &> $log
 		"""
 	}
 
@@ -208,6 +228,8 @@ if (params.joint_calling) {
 		"""
 	}
 
+	vcf_logs = Channel.empty()
+
 } else {
 
 	process make_vcf {
@@ -227,13 +249,37 @@ if (params.joint_calling) {
                 file(vcf) into Vcf
                 set val(indivID),val(sampleID),file(bam),file(bai) into Bam,BamToCoverage
                 file("${outdir}/*.csv") into BamQC
+		file(dragen_log) into vcf_logs
 
                 script:
                 vcf = sampleID + ".vcf.gz"
 		bam = sampleID + ".bam"
 		bai = bam + ".bai"
                 outdir = sampleID + "_results"
+		dragen_log = sampleID + "_vcf.log"
+			
+		def options = ""
+                if (params.mode == "wes") {
+                        options = "--vc-target-bed $bed "
+                        if (params.cnv) {
+                                options += "--cnv-target-bed $bed "
+                        }
+                        if (params.sv) {
+                                options += "--sv-target-bed $bed "
+                        }
+                } else {
+                        if (params.cnv) {
+                                options += "--cnv-enable-self-normalization true --cnv-wgs-interval-width 250"
+                        }
+                }
 
+		if (params.cnv) {
+                        options += "--enable-cnv true "
+                }
+                if (params.sv) {
+                        options += "--enable-sv true "
+                }
+                  
                 """
                 mkdir -p $outdir
 		
@@ -248,19 +294,43 @@ if (params.joint_calling) {
                         --enable-map-align-output true \
                         --enable-map-align true \
                         --enable-duplicate-marking true \
-                        --vc-target-bed $bed \
+			${options} \
                         --intermediate-results-dir ${params.dragen_tmp} \
                         --output-directory $outdir \
                         --output-file-prefix $sampleID \
-                        --output-format $out_format
+                        --output-format $out_format 2>&1 > $dragen_log
                 	
 			mv $outdir/$vcf $vcf
 			mv $outdir/$bam $bam
 			mv $outdir/$bai $bai
 		"""
         }
+
+	gvcf_logs = Channel.empty()
 }
 
+process calculate_used_bases {
+
+	when:
+	params.summary == true
+
+	input:
+	file('*') from vcf_logs.collect()
+	file('*') from gvcf_logs.collect()
+
+	output:
+	file(report) into summary
+
+	script:
+	report = run_name + ".used_bases.json"
+
+	"""
+
+		sum_used_bases.pl > $report
+
+	"""
+}
+ 
 if (params.qc)  {
 
 	if (params.mode == "wes") {
@@ -301,29 +371,6 @@ if (params.qc)  {
 		HybridCaptureMetricsOutput = Channel.empty()
 	}
 
-	process coverage {
-
-		label 'default'
-
-		publishDir "${params.outdir}/${indivID}/${sampleID}/Processing/", mode: 'copy'		
-	
-		input:
-		set val(indivID),val(sampleID),file(bam),file(bai) from BamToCoverage
-		file(bed) from bed_to_coverage.collect()
-
-		output:
-	        set file(genome_bed_coverage),file(genome_global_coverage) into Coverage
-
-        	script:
-	        base_name = bam.getBaseName()
-        	genome_bed_coverage = base_name + ".mosdepth.region.dist.txt"
-	        genome_global_coverage = base_name + ".mosdepth.global.dist.txt"
-
-        	"""
-                	mosdepth -t ${task.cpus} -n -f $REF -x -Q 10 -b $bed $base_name $bam
-	        """
-	}
-
 	process multiqc {
 
 		label 'default'
@@ -331,8 +378,8 @@ if (params.qc)  {
 		publishDir "${params.outdir}/MultiQC", mode: 'copy'
 
 		input:
-		file('*') from Coverage.collect()
 		file('*') from HybridCaptureMetricsOutput.collect()
+		file('*') from BamQC.collect()
 	
 		output:
 		file("multiqc_report.html") into MultiQC
