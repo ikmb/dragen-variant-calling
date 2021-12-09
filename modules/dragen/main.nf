@@ -63,7 +63,7 @@ process make_gvcf {
 		--intermediate-results-dir ${params.dragen_tmp} \
 		--output-directory $outdir \
 		--output-file-prefix $sampleID \
-		--output-format $out_format &> $log
+		--output-format $params.out_format &> $log
 	"""
 }
 
@@ -193,12 +193,11 @@ process make_vcf {
 
 	 publishDir "${params.outdir}/${sampleID}/", mode: 'copy'
 	input:
-	set val(indivID), val(sampleID), path(lreads),path(rreads)
-	path(bed) from target_vcf.collect()
-	file(dragen_reset) from DragenReset.collect()
+	tuple val(indivID), val(sampleID), path(lreads),path(rreads)
+	path(bed)
 
 	output:
-	path(vcf) into Vcf
+	path(vcf)
 	tuple val(indivID),val(sampleID),path(bam),path(bai)
 	path("${outdir}/*.csv")
 	path(dragen_log)
@@ -247,12 +246,12 @@ process make_vcf {
                         --enable-map-align-output true \
                         --enable-map-align true \
                         --enable-duplicate-marking true \
-			--dbsnp $DBSNP \
+			--dbsnp $params.dbsnp \
 			${options} \
                         --intermediate-results-dir ${params.dragen_tmp} \
                         --output-directory $outdir \
                         --output-file-prefix $sampleID \
-                        --output-format $out_format 2>&1 > $dragen_log
+                        --output-format $params.out_format 2>&1 > $dragen_log
                 	
 			mv $outdir/$vcf $vcf
 			mv $outdir/$bam $bam

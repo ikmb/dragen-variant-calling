@@ -1,14 +1,14 @@
-include { make_vcf ; make_gvcf, ; merge_gvcfs ; joint_call  ; trio_call } from './../../modules/dragen/main.nf' params(params)
+include { make_vcf ; make_gvcf ; merge_gvcfs ; joint_call  ; trio_call } from './../../modules/dragen/main.nf' params(params)
 
 // reads in, vcf out
-workflow dragen_single_sample {
+workflow DRAGEN_SINGLE_SAMPLE {
 
 	take:
 		reads
 		bed
 
 	main:
-		make_vcf(reads,bed)
+		make_vcf(reads.groupTuple(by: [0,1]),bed.collect())
 
 	emit:
 		vcf = make_vcf.out[0]
@@ -17,14 +17,14 @@ workflow dragen_single_sample {
 }
 
 // joint calling with multiple samples
-workflow dragen_joint_calling {
+workflow DRAGEN_JOINT_CALLING {
 
 	take:
 		reads
 		bed
 
 	main:
-		make_gvcf(reads,bed)
+		make_gvcf(reads.groupTuple(by: [0,1]),bed.collect())
 		merge_gvcfs(make_gvcf.out[0])
 		joint_call(merge_gvcfs.out)
 
@@ -35,7 +35,7 @@ workflow dragen_joint_calling {
 }
 
 // joint trio analysis
-workflow dragen_trio_calling {
+workflow DRAGEN_TRIO_CALLING {
 
 	take:
 		reads
@@ -43,7 +43,7 @@ workflow dragen_trio_calling {
 		ped
 
 	main:
-		make_gvcf(reads,bed)
+		make_gvcf(reads.groupTuple(by: [0,1]),bed.collect())
 		trio_call(make_gvcf.out[0].collect(),bed,ped)
 
 	emit:
