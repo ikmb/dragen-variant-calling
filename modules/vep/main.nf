@@ -22,12 +22,12 @@ process vep {
                 -i $vcf \
                 --format vcf \
                 -o $vcf_annotated --dir_plugins ${params.vep_plugin_dir} \
-                --plugin dbNSFP,$dbNSFP_DB,${params.dbnsfp_fields} \
-                --plugin dbscSNV,$dbscSNV_DB \
+                --plugin dbNSFP,${params.dbnsfp_db},${params.dbnsfp_fields} \
+                --plugin dbscSNV,${params.dbscsnv_db} \
                 --plugin CADD,${params.cadd_snps},${params.cadd_indels} \
                 --plugin ExACpLI \
                 --plugin UTRannotator \
-                --fasta $FASTA \
+                --fasta $params.ref \
                 --fork ${task.cpus} \
                 --vcf \
                 --per_gene \
@@ -39,10 +39,9 @@ process vep {
                 sed -i.bak 's/CADD_PHRED/CADD_phred/g' $vcf_annotated
 
         """
-
 }
 
-process alissa2vep {
+process vep2alissa {
 
 	publishDir "${params.outdir}/VEP", mode: 'copy'
 
@@ -56,7 +55,6 @@ process alissa2vep {
 	alissa_vcf = vcf.getBaseName() + ".alissa2vep.vcf"
 
 	"""
-		vep2alissa.pl --infile $vcf_annotated > $vcf_annotated_alissa
+		vep2alissa.pl --infile $vcf > $alissa_vcf
 	"""
-
 }

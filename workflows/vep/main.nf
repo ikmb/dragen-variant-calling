@@ -1,4 +1,4 @@
-include { vep ; vep2alissa } from "../../modules/vep/main.nf", params(params)
+include { vep ; vep2alissa } from "./../../modules/vep/main.nf" params(params)
 
 workflow VEP {
 

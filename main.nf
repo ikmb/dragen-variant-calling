@@ -48,6 +48,10 @@ if (!params.genome) {
 	exit 1, "Must provide an assembly name (--genome)"
 }
 
+params.assembly = "GRCh38"
+if (params.genome == "hg19") {
+	params.assembly = "GRCh37"
+}
 // The Dragen index and the matching FASTA sequence
 params.dragen_ref_dir = params.genomes[params.genome].dragenidx
 
@@ -80,8 +84,8 @@ if (params.exome) {
 	BED = params.bed ?: params.genomes[params.genome].bed
 	params.out_format = "cram"
 
-	TargetToHS = Channel.empty()
-	BaitsToHS = Channel.empty()
+	Targets = Channel.empty()
+	Baits = Channel.empty()
 	BedIntervals = Channel.empty()
 
 } 
@@ -94,7 +98,9 @@ if (params.ped) {
 }
 
 // import workflows
+include { EXOME_QC } from "./workflows/qc/main.nf" params(params)
 include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf" params(params)
+include { VEP } from "./workflows/vep/main.nf" params(params)
 
 // Input channels
 Channel.fromPath( file(params.ref) )
@@ -133,13 +139,25 @@ workflow {
 		if (params.ped) {
 			DRAGEN_TRIO_CALLING(Reads,BedIntervals,PedFile)
 			vcf = DRAGEN_TRIO_CALLING.out.vcf
+			bam = DRAGEN_TRIO_CALLING.out.bam
 		} else {	
 			DRAGEN_JOINT_CALLING(Reads,BedIntervals)
 			vcf = DRAGEN_JOINT_CALLING.out.vcf
+			bam = DRAGEN_JOINT_CALLING.out.bam
 		}
 	} else {
 		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervals)
 		vcf = DRAGEN_SINGLE_SAMPLE.out.vcf
+		bam = DRAGEN_SINGLE_SAMPLE.out.bam
+	}
+
+
+	if (params.vep) {
+ 	       VEP(vcf)
+	}
+
+	if (params.exome) {	
+		EXOME_QC(bam,Targets,Baits)
 	}
 
 }
