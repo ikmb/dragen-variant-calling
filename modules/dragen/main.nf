@@ -16,33 +16,33 @@ process make_gvcf {
 	path("${outdir}/*.gvcf.gz")
 	tuple val(indivID),val(sampleID),path("${outdir}/*.bam"),path("${outdir}/*.bai")
 	path("${outdir}/*.csv")
-	path(log)
+	path(logfile)
 
 	script:
 	gvcf = sampleID + ".gvcf.gz"
 	outdir = sampleID + "_results"
-	log = sampleID + "_gvcf.log"
+	logfile = sampleID + "_gvcf.log"
 
 	def options = ""
 	if (params.exome) {
-		options = "--vc-target-bed $bed "
+		options.concat("--vc-target-bed $bed ")
 		if (params.cnv) {
-			options += "--cnv-target-bed $bed "
+			options.concat("--cnv-target-bed $bed ")
 		}
 		if (params.sv) {
-			options += "--sv-target-bed $bed "
+			options.concat("--sv-target-bed $bed ")
 		}
 	} else {
 		if (params.cnv) {
-			options += "--cnv-enable-self-normalization true --cnv-wgs-interval-width 250"
+			options.concat("--cnv-enable-self-normalization true --cnv-wgs-interval-width 250 ")
 		}
 	}
 		  
 	if (params.cnv) {
-		options += "--enable-cnv true "
+		options.concat("--enable-cnv true ")
 	}
 	if (params.sv) {
-		options += "--enable-sv true "
+		options.concat("--enable-sv true ")
 	}
 	"""
 	mkdir -p $outdir
@@ -58,12 +58,11 @@ process make_gvcf {
 		--enable-map-align-output true \
 		--enable-map-align true \
 		--enable-duplicate-marking true \
-		$options \
 		--vc-emit-ref-confidence GVCF \
 		--intermediate-results-dir ${params.dragen_tmp} \
 		--output-directory $outdir \
 		--output-file-prefix $sampleID \
-		--output-format $params.out_format &> $log
+		--output-format $params.out_format $options  &> $logfile
 	"""
 }
 
@@ -101,7 +100,7 @@ process merge_gvcfs {
 			-r ${params.dragen_ref_dir} \
 			--enable-combinegvcfs true \
 			--output-directory merged_vcf \
-			--output-file-prefix $run_name \
+			--output-file-prefix ${params.run_name} \
 			--intermediate-results-dir ${params.dragen_tmp} \
 			$options \
 			--variant-list variants.list
@@ -159,11 +158,10 @@ process joint_call {
 
 	input:
 	path(mgvcf) 
-	path(ref) 
 	path(bed)
 
 	output:
-	path("*.vcf.gz")
+	path("*hard-filtered.vcf.gz")
 	path("results/*")
 
 	script:
@@ -179,8 +177,8 @@ process joint_call {
 		--variant $mgvcf \
 		--dbsnp $params.dbsnp \
 		--output-directory results \
-		--output-file-prefix $prefix \
-		$options
+		--output-file-prefix $prefix
+
 		mv results/*vcf.gz* . 
 	"""
 }

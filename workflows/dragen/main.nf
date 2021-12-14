@@ -25,8 +25,8 @@ workflow DRAGEN_JOINT_CALLING {
 
 	main:
 		make_gvcf(reads.groupTuple(by: [0,1]),bed.collect())
-		merge_gvcfs(make_gvcf.out[0])
-		joint_call(merge_gvcfs.out)
+		merge_gvcfs(make_gvcf.out[0].collect(),bed.collect())
+		joint_call(merge_gvcfs.out[0].collect(),bed.collect())
 
 	emit:
 		bam = make_gvcf.out[1]
@@ -44,7 +44,7 @@ workflow DRAGEN_TRIO_CALLING {
 
 	main:
 		make_gvcf(reads.groupTuple(by: [0,1]),bed.collect())
-		trio_call(make_gvcf.out[0].collect(),bed,ped)
+		trio_call(make_gvcf.out[0].collect(),bed.collect(),ped.collect())
 
 	emit:
 		bam = make_gvcf.out[1]

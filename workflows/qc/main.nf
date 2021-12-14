@@ -1,4 +1,4 @@
-include { target_metrics } from './../../modules/qc/main.nf' params(params)
+include { target_metrics ; wgs_metrics } from './../../modules/qc/main.nf' params(params)
 
 workflow EXOME_QC {
 
@@ -12,5 +12,19 @@ workflow EXOME_QC {
 
 	emit:
 		cov_report = target_metrics.out[0]
+
+}
+
+workflow WGS_QC {
+
+	take:
+		bam
+		bed
+
+	main:
+		wgs_metrics(bam,bed.collect())
+	
+	emit:
+		cov_report = wgs_metrics.out[1]
 
 }

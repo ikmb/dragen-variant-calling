@@ -86,7 +86,7 @@ if (params.exome) {
 
 	Targets = Channel.empty()
 	Baits = Channel.empty()
-	BedIntervals = Channel.empty()
+	BedIntervals = Channel.fromPath(BED)
 
 } 
 
@@ -98,7 +98,7 @@ if (params.ped) {
 }
 
 // import workflows
-include { EXOME_QC } from "./workflows/qc/main.nf" params(params)
+include { EXOME_QC ; WGS_QC } from "./workflows/qc/main.nf" params(params)
 include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf" params(params)
 include { VEP } from "./workflows/vep/main.nf" params(params)
 
@@ -158,6 +158,10 @@ workflow {
 
 	if (params.exome) {	
 		EXOME_QC(bam,Targets,Baits)
-	}
+		coverage = EXOME_QC.out.cov_report
+	} else {
+		WGS_QC(bam,BedIntervals)
+		coverage = WGS_QC.out.cov_report
+	} 
 
 }
