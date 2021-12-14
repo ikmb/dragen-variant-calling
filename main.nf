@@ -11,7 +11,7 @@ Usage: nextflow run ikmb/XXX
 
 Required parameters:
 --samples			Samplesheet in CSV format (see online documentation)
---genome			Assembly version to use (GRCh38)
+--assembly			Assembly version to use (GRCh38)
 --exome				This is an exome dataset
 --ped				A pedigree file in PED format (see online documentation)
 --email                        	Email address to send reports to (enclosed in '')
@@ -44,27 +44,29 @@ if (params.kit && !params.exome || params.exome && !params.kit) {
 	exit 1, "Exome analysis requires both --kit and --exome"
 }
 
-if (!params.genome) {
-	exit 1, "Must provide an assembly name (--genome)"
+if (!params.assembly) {
+	exit 1, "Must provide an assembly name (--assembly)"
 }
 
-params.assembly = "GRCh38"
-if (params.genome == "hg19") {
-	params.assembly = "GRCh37"
+params.assembly = "hg38"
+
+if (params.assembly == "hg19") {
+	params.vep_assembly = "GRCh37"
 }
+ 
 // The Dragen index and the matching FASTA sequence
-params.dragen_ref_dir = params.genomes[params.genome].dragenidx
+params.dragen_ref_dir = params.genomes[params.assembly].dragenidx
 
-params.ref = params.genomes[params.genome].fasta
-params.dbsnp = params.genomes[params.genome].dbsnp
+params.ref = params.genomes[params.assembly].fasta
+params.dbsnp = params.genomes[params.assembly].dbsnp
 params.out_format = "bam"
 
 // Mode-dependent settings
 if (params.exome) {
 
-	BED = params.bed ?: params.genomes[params.genome].kits[ params.kit ].bed
-        targets = params.bed ?: params.genomes[params.genome].kits[ params.kit ].targets
-        baits = params.bed ?: params.genomes[params.genome].kits[ params.kit ].baits
+	BED = params.bed ?: params.genomes[params.assembly].kits[ params.kit ].bed
+        targets = params.bed ?: params.genomes[params.assembly].kits[ params.kit ].targets
+        baits = params.bed ?: params.genomes[params.assembly].kits[ params.kit ].baits
 
         Channel.fromPath(targets)
                 .ifEmpty{exit 1; "Could not find the target intervals for this exome kit..."}
@@ -78,10 +80,9 @@ if (params.exome) {
         .ifEmpty { exit 1; "Could not find the BED interval file..." }
         .set { BedIntervals }
 
-
 } else {
 
-	BED = params.bed ?: params.genomes[params.genome].bed
+	BED = params.bed ?: params.genomes[params.assembly].bed
 	params.out_format = "cram"
 
 	Targets = Channel.empty()
@@ -95,8 +96,10 @@ if (params.ped) {
 	Channel.fromPath(params.ped)
 		.ifEmpty { exit 1; "Could not find the PED file..." }
 		.set { PedFile }
+} else {
+	PedFile = Channel.empty()
 }
-
+ 
 // import workflows
 include { EXOME_QC ; WGS_QC } from "./workflows/qc/main.nf" params(params)
 include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf" params(params)
@@ -108,16 +111,19 @@ Channel.fromPath( file(params.ref) )
 	.set { ref_fasta }
  
 Channel.from(file(params.samples))
-       	.splitCsv(sep: ';', header: true)
-	.map{ row-> tuple(row.IndivID,row.SampleID,file(row.R1),file(row.R2)) }
+       	.splitCsv(sep: ',', header: true)
+	.map{ row-> tuple(row.famID,row.indivID,row.RGSM,file(row.Read1File),file(row.Read2File)) }
 	.set { Reads }
 
+Channel.fromPath(params.samples)
+	.set { Samplesheet }
+ 
 // Console reporting
 log.info "---------------------------"
 log.info "Variant calling DRAGEN"
 log.info " - Version ${workflow.manifest.version} -"
 log.info "---------------------------"
-log.info "Assembly:     	${params.genome}"
+log.info "Assembly:     	${params.assembly}"
 log.info "Intervals:	${BED}"
 if (params.exome) {
 	log.info "Mode:		Exome"
@@ -137,20 +143,19 @@ workflow {
 
 	if (params.joint_calling) {
 		if (params.ped) {
-			DRAGEN_TRIO_CALLING(Reads,BedIntervals,PedFile)
+			DRAGEN_TRIO_CALLING(Reads,BedIntervals,PedFile,Samplesheet)
 			vcf = DRAGEN_TRIO_CALLING.out.vcf
 			bam = DRAGEN_TRIO_CALLING.out.bam
 		} else {	
-			DRAGEN_JOINT_CALLING(Reads,BedIntervals)
+			DRAGEN_JOINT_CALLING(Reads,BedIntervals,Samplesheet)
 			vcf = DRAGEN_JOINT_CALLING.out.vcf
 			bam = DRAGEN_JOINT_CALLING.out.bam
 		}
 	} else {
-		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervals)
+		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervals,Samplesheet)
 		vcf = DRAGEN_SINGLE_SAMPLE.out.vcf
 		bam = DRAGEN_SINGLE_SAMPLE.out.bam
 	}
-
 
 	if (params.vep) {
  	       VEP(vcf)

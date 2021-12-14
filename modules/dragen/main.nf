@@ -9,11 +9,12 @@ process make_gvcf {
 	publishDir "${params.outdir}/${indivID}/${sampleID}/", mode: 'copy'
 
 	input:
-	tuple val(indivID), val(sampleID), path(lreads),path(rreads)
+	tuple val(famID),val(indivID), val(sampleID), path(lreads),path(rreads)
 	path(bed)
+	path(samplesheet)
 
 	output:
-	path("${outdir}/*.gvcf.gz")
+	tuple val(famID),val(indivID),val(sampleID),path("${outdir}/*.gvcf.gz")
 	tuple val(indivID),val(sampleID),path("${outdir}/*.bam"),path("${outdir}/*.bai")
 	path("${outdir}/*.csv")
 	path(logfile)
@@ -47,7 +48,7 @@ process make_gvcf {
 	"""
 	mkdir -p $outdir
 
-	dragen_file_list.pl > files.csv
+	samplesheet2dragen.pl --samples $samplesheet > files.csv
 
 	/opt/edico/bin/dragen -f \
 		-r ${params.dragen_ref_dir} \
@@ -119,7 +120,7 @@ process trio_call {
 	input:
 	path(gvcfs)
 	path(bed)
-	path(ped)
+	path(samplesheet)
 
 	output:
 	path("*.vcf.gz")
@@ -134,10 +135,12 @@ process trio_call {
 	}
 
 	"""
+		samplesheet2dragen.pl --samples $samplesheet --ped 1
+
 		/opt/edico/bin/dragen -f \
 			-r ${params.dragen_ref_dir} \
 			--variant ${gvcfs.join( '--variant ')} \
-			--pedigree-file $ped \
+			--pedigree-file family.ped \
 			--intermediate-results-dir ${params.dragen_tmp} \
 			--dbsnp $params.dbsnp \
 			--output-directory results \
@@ -186,13 +189,13 @@ process joint_call {
 // end-to-end single sample variant calling
 process make_vcf {
 
-
 	label 'dragen'
 
-	 publishDir "${params.outdir}/${sampleID}/", mode: 'copy'
+	 publishDir "${params.outdir}/#{indivID}/${sampleID}/", mode: 'copy'
 	input:
-	tuple val(indivID), val(sampleID), path(lreads),path(rreads)
+	tuple val(famID),val(indivID), val(sampleID), path(lreads),path(rreads)
 	path(bed)
+	path(samplesheet)
 
 	output:
 	path(vcf)
@@ -233,7 +236,7 @@ process make_vcf {
         """
 		mkdir -p $outdir
 		
-		dragen_file_list.pl > files.csv
+		samplesheet2dragen.pl --samples $samplesheet > files.csv
 
                 /opt/edico/bin/dragen -f \
                         -r ${params.dragen_ref_dir} \

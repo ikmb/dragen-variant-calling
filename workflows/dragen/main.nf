@@ -6,9 +6,9 @@ workflow DRAGEN_SINGLE_SAMPLE {
 	take:
 		reads
 		bed
-
+		samplesheet
 	main:
-		make_vcf(reads.groupTuple(by: [0,1]),bed.collect())
+		make_vcf(reads.groupTuple(by: [0,1,2]),bed.collect(),samplesheet.collect())
 
 	emit:
 		vcf = make_vcf.out[0]
@@ -22,9 +22,10 @@ workflow DRAGEN_JOINT_CALLING {
 	take:
 		reads
 		bed
+		samplesheet
 
 	main:
-		make_gvcf(reads.groupTuple(by: [0,1]),bed.collect())
+		make_gvcf(reads,bed.collect(),samplesheet.collect())
 		merge_gvcfs(make_gvcf.out[0].collect(),bed.collect())
 		joint_call(merge_gvcfs.out[0].collect(),bed.collect())
 
@@ -40,11 +41,11 @@ workflow DRAGEN_TRIO_CALLING {
 	take:
 		reads
 		bed
-		ped
+		samplesheet
 
 	main:
-		make_gvcf(reads.groupTuple(by: [0,1]),bed.collect())
-		trio_call(make_gvcf.out[0].collect(),bed.collect(),ped.collect())
+		make_gvcf(reads,bed.collect(),samplesheet.collect())
+		trio_call(make_gvcf.out[0].groupTuple(by: 0),bed.collect(),ped.collect())
 
 	emit:
 		bam = make_gvcf.out[1]

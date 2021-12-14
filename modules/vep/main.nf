@@ -18,7 +18,7 @@ process vep {
                 --cache \
                 --dir ${params.vep_cache_dir} \
                 --species homo_sapiens \
-                --assembly $params.assembly \
+                --assembly $params.vep_assembly \
                 -i $vcf \
                 --format vcf \
                 -o $vcf_annotated --dir_plugins ${params.vep_plugin_dir} \

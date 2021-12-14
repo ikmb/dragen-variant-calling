@@ -12,3 +12,5 @@ dependencies:
   - samtools=1.13
   - bcftools=1.13
   - htslib=1.13
+  - perl-excel-writer-xlsx
+  - perl-json-parse=0.55

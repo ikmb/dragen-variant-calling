@@ -50,3 +50,21 @@ process wgs_metrics {
 		mosdepth -t ${task.cpus} -n -f ${params.ref} -x -Q 10 -b $bed $base_name $bam
 	"""
 }
+
+process multiqc {
+
+	publishDir "${params.outdir}/MultiQC", mode: 'copy'
+
+	input:
+	path('*')
+
+	output:
+	path("multiqc_report.html")
+
+	script:
+	
+	"""
+		multiqc .
+	"""
+}
+
