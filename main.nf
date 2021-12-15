@@ -13,11 +13,14 @@ Required parameters:
 --samples			Samplesheet in CSV format (see online documentation)
 --assembly			Assembly version to use (GRCh38)
 --exome				This is an exome dataset
---ped				A pedigree file in PED format (see online documentation)
 --email                        	Email address to send reports to (enclosed in '')
 --run_name			Name of this run
+--trio				Run this as trio analysis
 
 Optional parameters:
+--expansion_hunter		Run expansion hunter (default: true)
+--vep				Run Variant Effect Predictor (default: true)
+--interval_padding		Add this many bases to the calling intervals (default: 10)
 
 Expert options (usually not necessary to change!):
 
@@ -76,10 +79,6 @@ if (params.exome) {
                 .ifEmpty {exit 1; "Could not find the bait intervals for this exome kit..." }
                 .set { Baits }
 
-        Channel.fromPath(file(BED))
-        .ifEmpty { exit 1; "Could not find the BED interval file..." }
-        .set { BedIntervals }
-
 } else {
 
 	BED = params.bed ?: params.genomes[params.assembly].bed
@@ -87,24 +86,28 @@ if (params.exome) {
 
 	Targets = Channel.empty()
 	Baits = Channel.empty()
-	BedIntervals = Channel.fromPath(BED)
+	BedFile = Channel.fromPath(BED)
 
 } 
 
-if (params.ped) {
-
-	Channel.fromPath(params.ped)
-		.ifEmpty { exit 1; "Could not find the PED file..." }
-		.set { PedFile }
+if (params.expansion_hunter) {
+	catalog = params.genomes[params.assembly].expansion_catalog
+	Channel.fromPath(catalog)
+		.ifEmpty { 1; "Could not find expansion catalog for this assembly" }
+		.set { expansion_catalog }
 } else {
-	PedFile = Channel.empty()
+	expansion_catalog = Channel.empty()
 }
  
 // import workflows
-include { EXOME_QC ; WGS_QC } from "./workflows/qc/main.nf" params(params)
+include { EXOME_QC ; WGS_QC  } from "./workflows/qc/main.nf" params(params)
 include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf" params(params)
 include { VEP } from "./workflows/vep/main.nf" params(params)
-
+include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf" params(params)
+include { intervals_to_bed } from "./modules/intervals/main.nf" params(params)
+include { vcf_stats } from "./modules/vcf/main.nf" params(params)
+include { multiqc } from "./modules/qc/main.nf" params(params)
+ 
 // Input channels
 Channel.fromPath( file(params.ref) )
 	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
@@ -131,9 +134,7 @@ if (params.exome) {
 } else {
 	log.info "Mode:		WGS"
 }
-if (params.ped) {
-	log.info "Pedigree file		${params.ped}"
-}
+log.info "Trio mode:	${params.trio}"
 log.info "CNV calling:	${params.cnv}"
 log.info "SV calling:	${params.sv}"
 
@@ -141,8 +142,15 @@ workflow {
 
 	main:
 
+	if (params.exome) {
+		intervals_to_bed(Targets)
+		BedIntervals = intervals_to_bed.out
+	} else {
+		BedIntervals = BedFile
+	}
+
 	if (params.joint_calling) {
-		if (params.ped) {
+		if (params.trio) {
 			DRAGEN_TRIO_CALLING(Reads,BedIntervals,PedFile,Samplesheet)
 			vcf = DRAGEN_TRIO_CALLING.out.vcf
 			bam = DRAGEN_TRIO_CALLING.out.bam
@@ -157,6 +165,10 @@ workflow {
 		bam = DRAGEN_SINGLE_SAMPLE.out.bam
 	}
 
+	if (params.expansion_hunter) {
+		EXPANSION_HUNTER(bam,expansion_catalog)
+	}
+
 	if (params.vep) {
  	       VEP(vcf)
 	}
@@ -169,4 +181,7 @@ workflow {
 		coverage = WGS_QC.out.cov_report
 	} 
 
+	vcf_stats(vcf)
+	
+	multiqc(vcf_stats.out.concat(coverage).collect())
 }

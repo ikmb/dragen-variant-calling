@@ -5,7 +5,7 @@ process vep {
 	publishDir "${params.outdir}/VEP", mode: 'copy'
 
 	input:
-	path(vcf)
+	tuple path(vcf),path(tbi)
 
 	output:
 	path(vcf_annotated)

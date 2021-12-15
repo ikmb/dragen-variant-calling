@@ -123,7 +123,7 @@ process trio_call {
 	path(samplesheet)
 
 	output:
-	path("*.vcf.gz")
+	path("*hard-filtered.vcf.gz")
 	path("results")
 
 	script:
@@ -191,7 +191,7 @@ process make_vcf {
 
 	label 'dragen'
 
-	 publishDir "${params.outdir}/#{indivID}/${sampleID}/", mode: 'copy'
+	 publishDir "${params.outdir}/${indivID}/${sampleID}/", mode: 'copy'
 	input:
 	tuple val(famID),val(indivID), val(sampleID), path(lreads),path(rreads)
 	path(bed)

@@ -1,5 +1,7 @@
 process expansion_hunter {
 
+	label 'default'
+
 	publishDir "${params.outdir}/${indivID}/${sampleID}/expansions", mode: 'copy'
 
 	input:
@@ -23,6 +25,8 @@ process expansion_hunter {
 
 process expansion2xlsx {
 	
+	label 'default'
+
 	publishDir "${params.outdir}/${indivID}/${sampleID}/expansions", mode: 'copy'
 
 	input:
