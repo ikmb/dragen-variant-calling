@@ -1,6 +1,6 @@
 process expansion_hunter {
 
-	label 'default'
+	label 'expansion_hunter'
 
 	publishDir "${params.outdir}/${indivID}/${sampleID}/expansions", mode: 'copy'
 
@@ -18,7 +18,7 @@ process expansion_hunter {
 	prefix = indivID + "_" + sampleID + ".expansion_report"
 
 	"""
-		ExpansionHunter --reads $bam --refefence ${params.ref} --variant-catalog $catalog --output-prefix $prefix
+		ExpansionHunter --reads $bam --reference ${params.ref} --variant-catalog $catalog --output-prefix $prefix
 	"""
 
 }
@@ -40,6 +40,6 @@ process expansion2xlsx {
 	expansion_xls = report.getBaseName() + ".xlsx"
 
 	"""
-		expansion2xls.pl --infile $report --outfile $expansion_xls
+		expansions2xls.pl --infile $report --outfile $expansion_xls
 	"""
 }
