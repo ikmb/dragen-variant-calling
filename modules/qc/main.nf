@@ -32,6 +32,8 @@ process target_metrics {
 
 process wgs_metrics {
 
+	label 'mosdepth'
+
 	publishDir "${params.outdir}/${indivID}/${sampleID}/Metrics", mode: 'copy'
 	
 	input:
@@ -52,6 +54,8 @@ process wgs_metrics {
 }
 
 process multiqc {
+
+	label 'default'
 
 	publishDir "${params.outdir}/MultiQC", mode: 'copy'
 

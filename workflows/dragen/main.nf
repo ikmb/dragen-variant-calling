@@ -46,7 +46,7 @@ workflow DRAGEN_TRIO_CALLING {
 
 	main:
 		make_gvcf(reads,bed.collect(),samplesheet.collect())
-		trio_call(make_gvcf.out[0].groupTuple(by: 0),bed.collect(),ped.collect())
+		trio_call(make_gvcf.out[0].groupTuple(by: 0),bed.collect(),samplesheet.collect())
 		vcf_index(trio_call.out[0])
 	emit:
 		bam = make_gvcf.out[1]

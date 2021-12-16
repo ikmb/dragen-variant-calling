@@ -39,9 +39,9 @@ For trio analysis `--trio` you have to code your PED like information into the s
 
 * MaternalID same principle as for PaternalID
 
-* Sex lists the gender of the same (1 = female, 2 = male, other = unknown)
+* Sex lists the gender of the sample (1 = female, 2 = male, other = unknown)
 
-* Phenotype lists whether the sample is affected of the phenotype of interest (if any). Allowed values are: 0 = missing, 1 = unaffected, 2 = affected, -9 = missing. 
+* Phenotype lists whether the sample is affected by the phenotype of interest (if any). Allowed values are: 0 = missing, 1 = unaffected, 2 = affected, -9 = missing. 
 
 ### `--assembly` [ hg38 (default), hg19 ] 
 The mapping reference to be used by Dragen. We have two ALT aware versions available - hg38 with haplotypes and decoys (hg38HD) as well as hg19 (came with Dragen). 

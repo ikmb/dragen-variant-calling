@@ -42,6 +42,9 @@ if (!params.run_name) {
 	exit 1, "Must provide a --run_name!"
 }
 
+if (params.joint_calling && params.trio) {
+	exit 1, "Cannot specify joint-calling and trio analysis simultaneously"
+}
 // validate input options
 if (params.kit && !params.exome || params.exome && !params.kit) {
 	exit 1, "Exome analysis requires both --kit and --exome"
@@ -107,7 +110,9 @@ include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf" params(
 include { intervals_to_bed } from "./modules/intervals/main.nf" params(params)
 include { vcf_stats } from "./modules/vcf/main.nf" params(params)
 include { multiqc } from "./modules/qc/main.nf" params(params)
- 
+include { dragen_license as dragen_lic_start ; dragen_license as dragen_lic_end ; dragen_usage } from "./modules/logging/main.nf" params(params)
+include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf" params(params)
+  
 // Input channels
 Channel.fromPath( file(params.ref) )
 	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
@@ -142,6 +147,9 @@ workflow {
 
 	main:
 
+	SOFTWARE_VERSIONS()
+	versions = SOFTWARE_VERSIONS.out.yaml
+
 	if (params.exome) {
 		intervals_to_bed(Targets)
 		BedIntervals = intervals_to_bed.out
@@ -149,18 +157,20 @@ workflow {
 		BedIntervals = BedFile
 	}
 
+	// Trigger resource usage once before all other jobs
+	dragen_lic_start("start",BedIntervals)
+	BedIntervalsFinal = dragen_lic_start.out[1]
+
 	if (params.joint_calling) {
-		if (params.trio) {
-			DRAGEN_TRIO_CALLING(Reads,BedIntervals,PedFile,Samplesheet)
-			vcf = DRAGEN_TRIO_CALLING.out.vcf
-			bam = DRAGEN_TRIO_CALLING.out.bam
-		} else {	
-			DRAGEN_JOINT_CALLING(Reads,BedIntervals,Samplesheet)
-			vcf = DRAGEN_JOINT_CALLING.out.vcf
-			bam = DRAGEN_JOINT_CALLING.out.bam
-		}
+		DRAGEN_JOINT_CALLING(Reads,BedIntervalsFinal,Samplesheet)
+		vcf = DRAGEN_JOINT_CALLING.out.vcf
+		bam = DRAGEN_JOINT_CALLING.out.bam
+	} else if (params.trio) {
+		DRAGEN_TRIO_CALLING(Reads,BedIntervalsFinal,Samplesheet)
+                vcf = DRAGEN_TRIO_CALLING.out.vcf
+                bam = DRAGEN_TRIO_CALLING.out.bam
 	} else {
-		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervals,Samplesheet)
+		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervalsFinals,Samplesheet)
 		vcf = DRAGEN_SINGLE_SAMPLE.out.vcf
 		bam = DRAGEN_SINGLE_SAMPLE.out.bam
 	}
@@ -183,5 +193,9 @@ workflow {
 
 	vcf_stats(vcf)
 	
-	multiqc(vcf_stats.out.concat(coverage).collect())
+	dragen_lic_end("finished",vcf_stats.out.collect())
+
+	dragen_usage(dragen_lic_start.out[0],dragen_lic_end.out[0])
+
+	multiqc(vcf_stats.out.concat(coverage,versions,dragen_usage.out).collect())	
 }

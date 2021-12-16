@@ -14,7 +14,7 @@ process make_gvcf {
 	path(samplesheet)
 
 	output:
-	tuple val(famID),val(indivID),val(sampleID),path("${outdir}/*.gvcf.gz")
+	tuple val(famID),path("${outdir}/*.gvcf.gz")
 	tuple val(indivID),val(sampleID),path("${outdir}/*.bam"),path("${outdir}/*.bai")
 	path("${outdir}/*.csv")
 	path(logfile)
@@ -118,7 +118,7 @@ process trio_call {
 	publishDir "${params.outdir}/TrioCall", mode: 'copy'
 
 	input:
-	path(gvcfs)
+	tuple val(famID),path(gvcfs)
 	path(bed)
 	path(samplesheet)
 
@@ -135,11 +135,13 @@ process trio_call {
 	}
 
 	"""
-		samplesheet2dragen.pl --samples $samplesheet --ped 1
+		samplesheet2ped.pl --samples $samplesheet > family.ped
+
+		mkdir -p results 
 
 		/opt/edico/bin/dragen -f \
 			-r ${params.dragen_ref_dir} \
-			--variant ${gvcfs.join( '--variant ')} \
+			--variant ${gvcfs.join( ' --variant ')} \
 			--pedigree-file family.ped \
 			--intermediate-results-dir ${params.dragen_tmp} \
 			--dbsnp $params.dbsnp \
