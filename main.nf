@@ -165,13 +165,15 @@ workflow {
 		DRAGEN_JOINT_CALLING(Reads,BedIntervalsFinal,Samplesheet)
 		vcf = DRAGEN_JOINT_CALLING.out.vcf
 		bam = DRAGEN_JOINT_CALLING.out.bam
+		vcf_sample = DRAGEN_JOINT_CALLING.out.vcf_sample
 	} else if (params.trio) {
 		DRAGEN_TRIO_CALLING(Reads,BedIntervalsFinal,Samplesheet)
                 vcf = DRAGEN_TRIO_CALLING.out.vcf
                 bam = DRAGEN_TRIO_CALLING.out.bam
+		vcf_sample = DRAGEN_TRIO_CALLING.out.vcf_sample
 	} else {
 		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervalsFinals,Samplesheet)
-		vcf = DRAGEN_SINGLE_SAMPLE.out.vcf
+		vcf_sample = DRAGEN_SINGLE_SAMPLE.out.vcf
 		bam = DRAGEN_SINGLE_SAMPLE.out.bam
 	}
 
@@ -191,7 +193,7 @@ workflow {
 		coverage = WGS_QC.out.cov_report
 	} 
 
-	vcf_stats(vcf)
+	vcf_stats(vcf_sample)
 	
 	dragen_lic_end("finished",vcf_stats.out.collect())
 

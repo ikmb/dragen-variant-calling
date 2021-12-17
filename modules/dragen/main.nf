@@ -16,7 +16,8 @@ process make_gvcf {
 	output:
 	tuple val(famID),path("${outdir}/*.gvcf.gz")
 	tuple val(indivID),val(sampleID),path("${outdir}/*.bam"),path("${outdir}/*.bai")
-	path("${outdir}/*.csv")
+	tuple val(indivID),val(sampleID)
+	path("${outdir}")
 	path(logfile)
 
 	script:
@@ -200,7 +201,7 @@ process make_vcf {
 	path(samplesheet)
 
 	output:
-	path(vcf)
+	tuple path(vcf)
 	tuple val(indivID),val(sampleID),path(bam),path(bai)
 	path("${outdir}/*.csv")
 	path(dragen_log)

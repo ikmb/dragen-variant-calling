@@ -11,7 +11,7 @@ process vep {
 	path(vcf_annotated)
 
 	script:
-	vcf_annotated = vcf.getBaseName() + ".vep.vcf.gz"
+	vcf_annotated = vcf.getBaseName() + ".vep.vcf"
 
         """
 	        vep --offline \
@@ -27,6 +27,8 @@ process vep {
                 --plugin CADD,${params.cadd_snps},${params.cadd_indels} \
                 --plugin ExACpLI \
                 --plugin UTRannotator \
+		--plugin Mastermind,${params.vep_mastermind}\
+                --plugin SpliceAI,${params.spliceai_fields} \
                 --fasta $params.ref \
                 --fork ${task.cpus} \
                 --vcf \
@@ -42,8 +44,6 @@ process vep {
 }
 
 process vep2alissa {
-
-	publishDir "${params.outdir}/VEP", mode: 'copy'
 
 	input:
 	path(vcf)
