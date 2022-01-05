@@ -1,3 +1,23 @@
+process vcf_split_seq {
+
+	label 'default'
+
+	input:
+	path(vcf)
+
+	each chr from params.chromosomes
+
+	output:
+	path(vcf_chr)
+
+	script:
+	vcf_chr = vcf.getBaseName() + ".${chr}.vcf.gz"
+
+	"""
+		bcftools view -r $chr -O z -o $vcf_chr $vcf
+	"""
+}
+
 process vcf_index {
 
 	label 'default'
@@ -66,7 +86,7 @@ process vcf_add_header {
 
 	label 'default'
 
-        publishDir "${params.outdir}/Dragen", mode: 'copy'
+        publishDir "${params.outdir}/Variants", mode: 'copy'
         input:
         tuple file(vcf),file(tbi)
 

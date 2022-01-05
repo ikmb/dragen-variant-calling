@@ -15,7 +15,7 @@ process make_gvcf {
 
 	output:
 	tuple val(famID),path("${outdir}/*.gvcf.gz")
-	tuple val(indivID),val(sampleID),path("${outdir}/*.bam"),path("${outdir}/*.bai")
+	tuple val(indivID),val(sampleID),path("${outdir}/*.${params.out_format}"),path("${outdir}/*.${params.out_index}")
 	tuple val(indivID),val(sampleID)
 	path("${outdir}")
 	path(logfile)
@@ -27,24 +27,24 @@ process make_gvcf {
 
 	def options = ""
 	if (params.exome) {
-		options.concat("--vc-target-bed $bed ")
+		options += "--vc-target-bed $bed "
 		if (params.cnv) {
-			options.concat("--cnv-target-bed $bed ")
+			options += "--cnv-target-bed $bed --cnv-enable-self-normalization true --cnv-interval-width 500 "
 		}
 		if (params.sv) {
-			options.concat("--sv-target-bed $bed ")
+			options += "--sv-target-bed $bed "
 		}
 	} else {
 		if (params.cnv) {
-			options.concat("--cnv-enable-self-normalization true --cnv-wgs-interval-width 250 ")
+			options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
 		}
 	}
 		  
 	if (params.cnv) {
-		options.concat("--enable-cnv true ")
+		options += "--enable-cnv true --enable-cnv-tracks true "
 	}
 	if (params.sv) {
-		options.concat("--enable-sv true ")
+		options += "--enable-sv true "
 	}
 	"""
 	mkdir -p $outdir
@@ -194,22 +194,23 @@ process make_vcf {
 
 	label 'dragen'
 
-	 publishDir "${params.outdir}/${indivID}/${sampleID}/", mode: 'copy'
+	publishDir "${params.outdir}/${indivID}/${sampleID}/", mode: 'copy'
+
 	input:
 	tuple val(famID),val(indivID), val(sampleID), path(lreads),path(rreads)
 	path(bed)
 	path(samplesheet)
 
 	output:
-	tuple path(vcf)
+	path(vcf)
 	tuple val(indivID),val(sampleID),path(bam),path(bai)
 	path("${outdir}/*.csv")
 	path(dragen_log)
 
 	script:
 	vcf = sampleID + ".vcf.gz"
-	bam = sampleID + ".bam"
-	bai = bam + ".bai"
+	bam = sampleID +  "." + params.out_format
+	bai = bam + "." + params.out_index
 	outdir = sampleID + "_results"
 	dragen_log = sampleID + "_vcf.log"
 			
@@ -218,19 +219,19 @@ process make_vcf {
 	if (params.exome) {
 		options = "--vc-target-bed $bed "
 		if (params.cnv) {
-                	options += "--cnv-target-bed $bed "
+                	options += "--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 "
                 }
                 if (params.sv) {
 			options += "--sv-target-bed $bed "
                 }
         } else {
 		if (params.cnv) {
-			options += "--cnv-enable-self-normalization true --cnv-wgs-interval-width 250"
+			options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
                 }
         }
 
 	if (params.cnv) {
-		options += "--enable-cnv true "
+		options += "--enable-cnv true --enable-cnv-tracks true "
         }
 	if (params.sv) {
         	options += "--enable-sv true "
@@ -263,20 +264,46 @@ process make_vcf {
 	"""
 }
 
-process calculate_used_bases {
+process call_cnvs {
+
+	label 'dragen'
+	
+	publishDir "${params.outdir}/${indivID}/${sampleID}/CNVs", mode: 'copy'
 
 	input:
-	path('*')
+	tuple val(indivID),val(sampleID),path(bam),path(bai)
+	path(bed)
 
 	output:
-	path(report)
+	path(results)
 
-	script:
-	report = run_name + ".used_bases.json"
+	script:	
 
+	def input_option = "--bam-input"
+	if (params.cram) {
+		input_option = "--cram-input"
+	}
+
+	def options = ""
+	if (params.exome) {
+		options += "--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 "
+	} else {
+		options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
+	}
+
+	results = "cnv_" + sampleID
+	
 	"""
+		mkdir -r $results
 
-		sum_used_bases.pl > $report
+		/opt/edico/bin/dragen -f \
+			-r ${params.dragen_ref_dir} \
+			$input_option $bam \
+			--output-directory $results \
+			--output-file-prefix $sampleID \
+			--enable-map-align false \
+			--enable-cnv true \
+			$options 	
 
 	"""
 }

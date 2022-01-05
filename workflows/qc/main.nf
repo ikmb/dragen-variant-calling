@@ -25,6 +25,6 @@ workflow WGS_QC {
 		wgs_metrics(bam,bed.collect())
 
 	emit:
-		cov_report = wgs_metrics.out[1]
+		cov_report = wgs_metrics.out
 
 }

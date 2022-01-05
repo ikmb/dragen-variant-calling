@@ -55,6 +55,7 @@ if (!params.assembly) {
 }
 
 params.assembly = "hg38"
+params.chromosomes = [ "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY", "chrM" ]
 
 if (params.assembly == "hg19") {
 	params.vep_assembly = "GRCh37"
@@ -65,7 +66,6 @@ params.dragen_ref_dir = params.genomes[params.assembly].dragenidx
 
 params.ref = params.genomes[params.assembly].fasta
 params.dbsnp = params.genomes[params.assembly].dbsnp
-params.out_format = "bam"
 
 // Mode-dependent settings
 if (params.exome) {
@@ -73,7 +73,8 @@ if (params.exome) {
 	BED = params.bed ?: params.genomes[params.assembly].kits[ params.kit ].bed
         targets = params.bed ?: params.genomes[params.assembly].kits[ params.kit ].targets
         baits = params.bed ?: params.genomes[params.assembly].kits[ params.kit ].baits
-
+	params.out_format = "bam"
+	params.out_index = "bai"
         Channel.fromPath(targets)
                 .ifEmpty{exit 1; "Could not find the target intervals for this exome kit..."}
                 .set { Targets }
@@ -86,7 +87,7 @@ if (params.exome) {
 
 	BED = params.bed ?: params.genomes[params.assembly].bed
 	params.out_format = "cram"
-
+	params.out_index = "crai"
 	Targets = Channel.empty()
 	Baits = Channel.empty()
 	BedFile = Channel.fromPath(BED)
@@ -139,6 +140,7 @@ if (params.exome) {
 } else {
 	log.info "Mode:		WGS"
 }
+log.info "Align format:	${params.out_format}"
 log.info "Trio mode:	${params.trio}"
 log.info "CNV calling:	${params.cnv}"
 log.info "SV calling:	${params.sv}"
@@ -172,8 +174,9 @@ workflow {
                 bam = DRAGEN_TRIO_CALLING.out.bam
 		vcf_sample = DRAGEN_TRIO_CALLING.out.vcf_sample
 	} else {
-		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervalsFinals,Samplesheet)
+		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervalsFinal,Samplesheet)
 		vcf_sample = DRAGEN_SINGLE_SAMPLE.out.vcf
+		vcf = DRAGEN_SINGLE_SAMPLE.out.vcf
 		bam = DRAGEN_SINGLE_SAMPLE.out.bam
 	}
 

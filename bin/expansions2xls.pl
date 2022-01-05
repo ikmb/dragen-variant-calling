@@ -61,7 +61,7 @@ my @header = ( "Lokus", "Variante" , "Coverage", "Allele" , "Genotyp" , "CI", "R
 
 foreach my $locus (keys %$loci) {
 		
-	printf $locus . "\n";
+	printf STDERR $locus . "\n";
 	
 	my $alleles = $loci->{$locus}->{'AlleleCount'};
 	my $variants = $loci->{$locus}->{'Variants'};

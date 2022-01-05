@@ -41,7 +41,7 @@ process wgs_metrics {
 	path(bed)
 
 	output:
-	path(genome_bed_coverage),path(genome_global_coverage)
+	path(genome_global_coverage)
 
 	script:
 	base_name = bam.getBaseName()
