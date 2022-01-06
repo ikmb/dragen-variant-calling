@@ -1,53 +1,61 @@
-include { make_vcf ; make_gvcf, ; merge_gvcfs ; joint_call  ; trio_call } from './../../modules/dragen/main.nf' params(params)
+include { make_vcf ; make_gvcf ; merge_gvcfs ; joint_call  ; trio_call } from './../../modules/dragen/main.nf' params(params)
+include { vcf_add_header ; vcf_index ; vcf_by_sample } from "./../../modules/vcf/main.nf" params(params)
 
 // reads in, vcf out
-workflow dragen_single_sample {
+workflow DRAGEN_SINGLE_SAMPLE {
 
 	take:
 		reads
 		bed
-
+		samplesheet
 	main:
-		make_vcf(reads,bed)
-
+		make_vcf(reads.groupTuple(by: [0,1,2]),bed.collect(),samplesheet.collect())
+		vcf_index(make_vcf.out[0])
+		vcf_add_header(vcf_index.out)
 	emit:
-		vcf = make_vcf.out[0]
+		vcf = vcf_add_header.out
 		bam = make_vcf.out[1]
-
+		vcf_sample = vcf_add_header.out
 }
 
 // joint calling with multiple samples
-workflow dragen_joint_calling {
+workflow DRAGEN_JOINT_CALLING {
 
 	take:
 		reads
 		bed
+		samplesheet
 
 	main:
-		make_gvcf(reads,bed)
-		merge_gvcfs(make_gvcf.out[0])
-		joint_call(merge_gvcfs.out)
-
+		make_gvcf(reads,bed.collect(),samplesheet.collect())
+		merge_gvcfs(make_gvcf.out[0].collect(),bed.collect())
+		joint_call(merge_gvcfs.out[0].collect(),bed.collect())
+		vcf_index(joint_call.out[0])
+		vcf_by_sample(vcf_index.out,make_gvcf.out[2])
+		vcf_add_header(vcf_index.out)
 	emit:
 		bam = make_gvcf.out[1]
-		vcf = joint_call.out[0]
-	
+		vcf = vcf_add_header.out
+		vcf_sample = vcf_by_sample.out	
 }
 
 // joint trio analysis
-workflow dragen_trio_calling {
+workflow DRAGEN_TRIO_CALLING {
 
 	take:
 		reads
 		bed
-		ped
+		samplesheet
 
 	main:
-		make_gvcf(reads,bed)
-		trio_call(make_gvcf.out[0].collect(),bed,ped)
-
+		make_gvcf(reads,bed.collect(),samplesheet.collect())
+		trio_call(make_gvcf.out[0].groupTuple(by: 0),bed.collect(),samplesheet.collect())
+		vcf_index(trio_call.out[0])
+		vcf_by_sample(vcf_index.out.collect(),make_gvcf.out[2])
+		vcf_add_header(vcf_index.out)
 	emit:
 		bam = make_gvcf.out[1]
-		vcf = trio_call.out[0]
+		vcf = vcf_add_header.out
+		vcf_sample = vcf_by_sample.out[0]
 
 }

@@ -9,37 +9,39 @@ process make_gvcf {
 	publishDir "${params.outdir}/${indivID}/${sampleID}/", mode: 'copy'
 
 	input:
-	tuple val(indivID), val(sampleID), path(lreads),path(rreads)
+	tuple val(famID),val(indivID), val(sampleID), path(lreads),path(rreads)
 	path(bed)
+	path(samplesheet)
 
 	output:
-	path("${outdir}/*.gvcf.gz")
-	tuple val(indivID),val(sampleID),path("${outdir}/*.bam"),path("${outdir}/*.bai")
-	path("${outdir}/*.csv")
-	path(log)
+	tuple val(famID),path("${outdir}/*.gvcf.gz")
+	tuple val(indivID),val(sampleID),path("${outdir}/*.${params.out_format}"),path("${outdir}/*.${params.out_index}")
+	tuple val(indivID),val(sampleID)
+	path("${outdir}")
+	path(logfile)
 
 	script:
 	gvcf = sampleID + ".gvcf.gz"
 	outdir = sampleID + "_results"
-	log = sampleID + "_gvcf.log"
+	logfile = sampleID + "_gvcf.log"
 
 	def options = ""
 	if (params.exome) {
-		options = "--vc-target-bed $bed "
+		options += "--vc-target-bed $bed "
 		if (params.cnv) {
-			options += "--cnv-target-bed $bed "
+			options += "--cnv-target-bed $bed --cnv-enable-self-normalization true --cnv-interval-width 500 "
 		}
 		if (params.sv) {
 			options += "--sv-target-bed $bed "
 		}
 	} else {
 		if (params.cnv) {
-			options += "--cnv-enable-self-normalization true --cnv-wgs-interval-width 250"
+			options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
 		}
 	}
 		  
 	if (params.cnv) {
-		options += "--enable-cnv true "
+		options += "--enable-cnv true --enable-cnv-tracks true "
 	}
 	if (params.sv) {
 		options += "--enable-sv true "
@@ -47,7 +49,7 @@ process make_gvcf {
 	"""
 	mkdir -p $outdir
 
-	dragen_file_list.pl > files.csv
+	samplesheet2dragen.pl --samples $samplesheet > files.csv
 
 	/opt/edico/bin/dragen -f \
 		-r ${params.dragen_ref_dir} \
@@ -58,12 +60,11 @@ process make_gvcf {
 		--enable-map-align-output true \
 		--enable-map-align true \
 		--enable-duplicate-marking true \
-		$options \
 		--vc-emit-ref-confidence GVCF \
 		--intermediate-results-dir ${params.dragen_tmp} \
 		--output-directory $outdir \
 		--output-file-prefix $sampleID \
-		--output-format $out_format &> $log
+		--output-format $params.out_format $options  &> $logfile
 	"""
 }
 
@@ -101,7 +102,7 @@ process merge_gvcfs {
 			-r ${params.dragen_ref_dir} \
 			--enable-combinegvcfs true \
 			--output-directory merged_vcf \
-			--output-file-prefix $run_name \
+			--output-file-prefix ${params.run_name} \
 			--intermediate-results-dir ${params.dragen_tmp} \
 			$options \
 			--variant-list variants.list
@@ -118,12 +119,12 @@ process trio_call {
 	publishDir "${params.outdir}/TrioCall", mode: 'copy'
 
 	input:
-	path(gvcfs)
+	tuple val(famID),path(gvcfs)
 	path(bed)
-	path(ped)
+	path(samplesheet)
 
 	output:
-	path("*.vcf.gz")
+	path("*hard-filtered.vcf.gz")
 	path("results")
 
 	script:
@@ -135,10 +136,14 @@ process trio_call {
 	}
 
 	"""
+		samplesheet2ped.pl --samples $samplesheet > family.ped
+
+		mkdir -p results 
+
 		/opt/edico/bin/dragen -f \
 			-r ${params.dragen_ref_dir} \
-			--variant ${gvcfs.join( '--variant ')} \
-			--pedigree-file $ped \
+			--variant ${gvcfs.join( ' --variant ')} \
+			--pedigree-file family.ped \
 			--intermediate-results-dir ${params.dragen_tmp} \
 			--dbsnp $params.dbsnp \
 			--output-directory results \
@@ -159,11 +164,10 @@ process joint_call {
 
 	input:
 	path(mgvcf) 
-	path(ref) 
 	path(bed)
 
 	output:
-	path("*.vcf.gz")
+	path("*hard-filtered.vcf.gz")
 	path("results/*")
 
 	script:
@@ -179,8 +183,8 @@ process joint_call {
 		--variant $mgvcf \
 		--dbsnp $params.dbsnp \
 		--output-directory results \
-		--output-file-prefix $prefix \
-		$options
+		--output-file-prefix $prefix
+
 		mv results/*vcf.gz* . 
 	"""
 }
@@ -188,25 +192,25 @@ process joint_call {
 // end-to-end single sample variant calling
 process make_vcf {
 
-
 	label 'dragen'
 
-	 publishDir "${params.outdir}/${sampleID}/", mode: 'copy'
+	publishDir "${params.outdir}/${indivID}/${sampleID}/", mode: 'copy'
+
 	input:
-	set val(indivID), val(sampleID), path(lreads),path(rreads)
-	path(bed) from target_vcf.collect()
-	file(dragen_reset) from DragenReset.collect()
+	tuple val(famID),val(indivID), val(sampleID), path(lreads),path(rreads)
+	path(bed)
+	path(samplesheet)
 
 	output:
-	path(vcf) into Vcf
+	path(vcf)
 	tuple val(indivID),val(sampleID),path(bam),path(bai)
 	path("${outdir}/*.csv")
 	path(dragen_log)
 
 	script:
 	vcf = sampleID + ".vcf.gz"
-	bam = sampleID + ".bam"
-	bai = bam + ".bai"
+	bam = sampleID +  "." + params.out_format
+	bai = bam + "." + params.out_index
 	outdir = sampleID + "_results"
 	dragen_log = sampleID + "_vcf.log"
 			
@@ -215,19 +219,19 @@ process make_vcf {
 	if (params.exome) {
 		options = "--vc-target-bed $bed "
 		if (params.cnv) {
-                	options += "--cnv-target-bed $bed "
+                	options += "--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 "
                 }
                 if (params.sv) {
 			options += "--sv-target-bed $bed "
                 }
         } else {
 		if (params.cnv) {
-			options += "--cnv-enable-self-normalization true --cnv-wgs-interval-width 250"
+			options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
                 }
         }
 
 	if (params.cnv) {
-		options += "--enable-cnv true "
+		options += "--enable-cnv true --enable-cnv-tracks true "
         }
 	if (params.sv) {
         	options += "--enable-sv true "
@@ -236,7 +240,7 @@ process make_vcf {
         """
 		mkdir -p $outdir
 		
-		dragen_file_list.pl > files.csv
+		samplesheet2dragen.pl --samples $samplesheet > files.csv
 
                 /opt/edico/bin/dragen -f \
                         -r ${params.dragen_ref_dir} \
@@ -247,12 +251,12 @@ process make_vcf {
                         --enable-map-align-output true \
                         --enable-map-align true \
                         --enable-duplicate-marking true \
-			--dbsnp $DBSNP \
+			--dbsnp $params.dbsnp \
 			${options} \
                         --intermediate-results-dir ${params.dragen_tmp} \
                         --output-directory $outdir \
                         --output-file-prefix $sampleID \
-                        --output-format $out_format 2>&1 > $dragen_log
+                        --output-format $params.out_format 2>&1 > $dragen_log
                 	
 			mv $outdir/$vcf $vcf
 			mv $outdir/$bam $bam
@@ -260,20 +264,46 @@ process make_vcf {
 	"""
 }
 
-process calculate_used_bases {
+process call_cnvs {
+
+	label 'dragen'
+	
+	publishDir "${params.outdir}/${indivID}/${sampleID}/CNVs", mode: 'copy'
 
 	input:
-	path('*')
+	tuple val(indivID),val(sampleID),path(bam),path(bai)
+	path(bed)
 
 	output:
-	path(report)
+	path(results)
 
-	script:
-	report = run_name + ".used_bases.json"
+	script:	
 
+	def input_option = "--bam-input"
+	if (params.cram) {
+		input_option = "--cram-input"
+	}
+
+	def options = ""
+	if (params.exome) {
+		options += "--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 "
+	} else {
+		options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
+	}
+
+	results = "cnv_" + sampleID
+	
 	"""
+		mkdir -r $results
 
-		sum_used_bases.pl > $report
+		/opt/edico/bin/dragen -f \
+			-r ${params.dragen_ref_dir} \
+			$input_option $bam \
+			--output-directory $results \
+			--output-file-prefix $sampleID \
+			--enable-map-align false \
+			--enable-cnv true \
+			$options 	
 
 	"""
 }
