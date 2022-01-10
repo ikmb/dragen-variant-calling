@@ -19,10 +19,12 @@ perl my_script.pl
 
 my $outfile = undef;
 my $infile = undef;
+my $trio = undef;
 my $help;
 
 GetOptions(
     "help" => \$help,
+    "trio=s" => \$trio,
     "infile=s" => \$infile,
     "outfile=s" => \$outfile);
 
@@ -53,6 +55,9 @@ my %valid_pheno = ( "1" => 0, "2" => 0 , "0" => 0, "-9" => 0 );
 
 my %fam_hash;
 
+my %fam_counter;
+
+// Get all the information and perform value validation
 foreach my $line (@lines) {
 
 	$lc += 1;
@@ -67,6 +72,12 @@ foreach my $line (@lines) {
 
 	$fam_hash{$rgsm} = $fam_id ;
 
+	if (defined $fam_counter{$fam_id}) {
+		$fam_counter{$fam_id} += 1;
+	} else {
+		$fam_counter{$fam_id} = 0;
+	}
+
 	if (!defined $valid_sex{$sex}) {
 		die "Found invalid sex: $sex \n";
 	}
@@ -76,6 +87,7 @@ foreach my $line (@lines) {
 	
 }
 
+// validate family relationships if any
 foreach my $line (@lines) {
 
 	my ($fam_id,$indiv_id,$rgid,$rgsm,$rglb,$lane,$r1,$r2,$patid,$matid,$sex,$pheno) = split(",", $line) ;
@@ -100,6 +112,15 @@ foreach my $line (@lines) {
 
         }
 
+}
+
+if (defined $trio) {
+	foreach my $fam (keys %fam_counter){
+		my $count = $fam_counter{$fam};
+		if ($count < 3) {
+			die "Family $fam has more than one but less than 3 member\n";
+		}
+	}
 }
 
 close($IN);

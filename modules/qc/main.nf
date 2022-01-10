@@ -10,9 +10,13 @@ process validate_samplesheet {
 
 	script:
 	ss = "Samples.validated.csv"
+	def options = ""
+	if (params.trio) {
+		options = "--trio 1"
+	}
 
 	"""
-		validate_samplesheet.pl --infile $csv
+		validate_samplesheet.pl --infile $csv $options
 		cp $csv $ss
 	"""
 }
