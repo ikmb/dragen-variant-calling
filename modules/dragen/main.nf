@@ -18,12 +18,13 @@ process make_gvcf {
 	tuple val(indivID),val(sampleID),path("${outdir}/*.${params.out_format}"),path("${outdir}/*.${params.out_index}")
 	tuple val(indivID),val(sampleID)
 	path("${outdir}")
-	path(logfile)
+	tuple path(dragen_start),path(dragen_end)
 
 	script:
 	gvcf = sampleID + ".gvcf.gz"
 	outdir = sampleID + "_results"
-	logfile = sampleID + "_gvcf.log"
+	dragen_start = sampleID + "dragen_log.gvcf.start.log"
+	dragen_end = sampleID + "dragen_log.gvcf.end.log"
 
 	def options = ""
 	if (params.exome) {
@@ -47,6 +48,9 @@ process make_gvcf {
 		options = options.concat("--enable-sv true ")
 	}
 	"""
+
+	/opt/edico/bin/dragen_lic -f genome &> $dragen_start
+
 	mkdir -p $outdir
 
 	samplesheet2dragen.pl --samples $samplesheet > files.csv
@@ -64,7 +68,10 @@ process make_gvcf {
 		--intermediate-results-dir ${params.dragen_tmp} \
 		--output-directory $outdir \
 		--output-file-prefix $sampleID \
-		--output-format $params.out_format $options  &> $logfile
+		--output-format $params.out_format $options
+
+	/opt/edico/bin/dragen_lic -f genome &> $dragen_end
+
 	"""
 }
 
@@ -82,6 +89,7 @@ process merge_gvcfs {
 	output:
 	path(merged_gvcf)
 	path("merged_vcf/*")
+	tuple path(dragen_start),path(dragen_end)
 
 	script:
 	def options = ""
@@ -90,7 +98,12 @@ process merge_gvcfs {
 	}
 	merged_gvcf = params.run_name + ".gvcf.gz"
 
+	dragen_start = params.run_name + ".dragen_log.merge_gvcf.start.log"
+	dragen_end = params.run_name + ".dragen_log.merge_gvcf.end.log"
+
 	"""
+	
+		/opt/edico/bin/dragen_lic -f genome &> $dragen_start
 
 		for i in \$(echo *.gvcf.gz)
        			do echo \$i >> variants.list
@@ -108,6 +121,8 @@ process merge_gvcfs {
 			--variant-list variants.list
 
 		mv merged_vcf/*vcf.gz . 
+
+		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
 	"""
 }
 
@@ -135,7 +150,13 @@ process trio_call {
                 options = "--vc-target-bed $bed "
 	}
 
+	dragen_start = famID + ".dragen_log.trio.start.log"
+	dragen_end = famID + ".dragen_log.trio.end.log"
+
 	"""
+
+		/opt/edico/bin/dragen_lic -f genome &> $dragen_start
+
 		samplesheet2ped.pl --samples $samplesheet > family.ped
 
 		mkdir -p results 
@@ -152,6 +173,8 @@ process trio_call {
 			$options			
 					
 			cp results/*.vcf.gz* . 
+
+		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
 	"""
 }
 
@@ -169,11 +192,17 @@ process joint_call {
 	output:
 	path("*hard-filtered.vcf.gz")
 	path("results/*")
+	tuple path(dragen_start),path(dragen_end)
 
 	script:
 	prefix = params.run_name + ".joint_genotyped"
-	
+	dragen_start = params.run_name + ".dragen_log.joint_calling.start.log"
+	dragen_end = params.run_name + ".dragen_log.joint_calling.end.log"
+		
 	"""
+
+		/opt/edico/bin/dragen_lic -f genome &> $dragen_start
+
 		mkdir -p results
 
 		/opt/edico/bin/dragen -f \
@@ -186,6 +215,9 @@ process joint_call {
 		--output-file-prefix $prefix
 
 		mv results/*vcf.gz* . 
+
+		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
+
 	"""
 }
 
@@ -205,14 +237,16 @@ process make_vcf {
 	path(vcf)
 	tuple val(indivID),val(sampleID),path(bam),path(bai)
 	path("${outdir}/*")
-	path(dragen_log)
+	tuple path(dragen_start),path(dragen_end)
 
 	script:
 	vcf = sampleID + ".vcf.gz"
 	bam = sampleID +  "." + params.out_format
 	bai = bam + "." + params.out_index
 	outdir = sampleID + "_results"
-	dragen_log = sampleID + "_vcf.log"
+
+	dragen_start = sampleID + ".dragen_log.vcf.start.log"
+	dragen_end = sampleID + ".dragen_log.vcf.end.log"
 			
 	def options = ""
 
@@ -238,6 +272,9 @@ process make_vcf {
         }
                   
         """
+
+		/opt/edico/bin/dragen_lic -f genome &> $dragen_start
+
 		mkdir -p $outdir
 		
 		samplesheet2dragen.pl --samples $samplesheet > files.csv
@@ -261,6 +298,8 @@ process make_vcf {
 			mv $outdir/$vcf $vcf
 			mv $outdir/$bam $bam
 			mv $outdir/$bai $bai
+
+		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
 	"""
 }
 
