@@ -68,7 +68,7 @@ foreach my $file (@files) {
 
 }
 
-@sorted = sort { $a <=> $b } @counts;
+my @sorted = sort { $a <=> $b } @counts;
 
 my $used = @sorted[-1] - @sorted[0] ;
 
