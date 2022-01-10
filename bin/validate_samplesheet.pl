@@ -57,7 +57,7 @@ my %fam_hash;
 
 my %fam_counter;
 
-// Get all the information and perform value validation
+# Get all the information and perform value validation
 foreach my $line (@lines) {
 
 	$lc += 1;
@@ -72,7 +72,7 @@ foreach my $line (@lines) {
 
 	$fam_hash{$rgsm} = $fam_id ;
 
-	if (defined $fam_counter{$fam_id}) {
+	if (exists $fam_counter{$fam_id}) {
 		$fam_counter{$fam_id} += 1;
 	} else {
 		$fam_counter{$fam_id} = 0;
@@ -87,7 +87,7 @@ foreach my $line (@lines) {
 	
 }
 
-// validate family relationships if any
+# validate family relationships if any
 foreach my $line (@lines) {
 
 	my ($fam_id,$indiv_id,$rgid,$rgsm,$rglb,$lane,$r1,$r2,$patid,$matid,$sex,$pheno) = split(",", $line) ;

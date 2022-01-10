@@ -141,6 +141,7 @@ process trio_call {
 	output:
 	path("*hard-filtered.vcf.gz")
 	path("results")
+	tuple path(dragen_start),path(dragen_end)
 
 	script:
 
@@ -293,7 +294,7 @@ process make_vcf {
                         --intermediate-results-dir ${params.dragen_tmp} \
                         --output-directory $outdir \
                         --output-file-prefix $sampleID \
-                        --output-format $params.out_format 2>&1 > $dragen_log
+                        --output-format $params.out_format
                 	
 			mv $outdir/$vcf $vcf
 			mv $outdir/$bam $bam
