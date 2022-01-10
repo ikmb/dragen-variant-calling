@@ -21,6 +21,8 @@ Optional parameters:
 --expansion_hunter		Run expansion hunter (default: true)
 --vep				Run Variant Effect Predictor (default: true)
 --interval_padding		Add this many bases to the calling intervals (default: 10)
+--cnv				Enable CNV calling (not recommended for exomes)
+--sv				Enable SV calling (not recommended for exomes)
 
 Expert options (usually not necessary to change!):
 
@@ -110,7 +112,7 @@ include { VEP } from "./workflows/vep/main.nf" params(params)
 include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf" params(params)
 include { intervals_to_bed } from "./modules/intervals/main.nf" params(params)
 include { vcf_stats } from "./modules/vcf/main.nf" params(params)
-include { multiqc } from "./modules/qc/main.nf" params(params)
+include { multiqc ; validate_samplesheet } from "./modules/qc/main.nf" params(params)
 include { dragen_license as dragen_lic_start ; dragen_license as dragen_lic_end ; dragen_usage } from "./modules/logging/main.nf" params(params)
 include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf" params(params)
   
@@ -152,6 +154,10 @@ workflow {
 	SOFTWARE_VERSIONS()
 	versions = SOFTWARE_VERSIONS.out.yaml
 
+	// rudementary check of samplesheet validity before we run Dragen	
+	validate_samplesheet(Samplesheet)
+	samples = validate_samplesheet.out
+
 	if (params.exome) {
 		intervals_to_bed(Targets)
 		BedIntervals = intervals_to_bed.out
@@ -164,17 +170,17 @@ workflow {
 	BedIntervalsFinal = dragen_lic_start.out[1]
 
 	if (params.joint_calling) {
-		DRAGEN_JOINT_CALLING(Reads,BedIntervalsFinal,Samplesheet)
+		DRAGEN_JOINT_CALLING(Reads,BedIntervalsFinal,samples)
 		vcf = DRAGEN_JOINT_CALLING.out.vcf
 		bam = DRAGEN_JOINT_CALLING.out.bam
 		vcf_sample = DRAGEN_JOINT_CALLING.out.vcf_sample
 	} else if (params.trio) {
-		DRAGEN_TRIO_CALLING(Reads,BedIntervalsFinal,Samplesheet)
+		DRAGEN_TRIO_CALLING(Reads,BedIntervalsFinal,samples)
                 vcf = DRAGEN_TRIO_CALLING.out.vcf
                 bam = DRAGEN_TRIO_CALLING.out.bam
 		vcf_sample = DRAGEN_TRIO_CALLING.out.vcf_sample
 	} else {
-		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervalsFinal,Samplesheet)
+		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervalsFinal,samples)
 		vcf_sample = DRAGEN_SINGLE_SAMPLE.out.vcf
 		vcf = DRAGEN_SINGLE_SAMPLE.out.vcf
 		bam = DRAGEN_SINGLE_SAMPLE.out.bam

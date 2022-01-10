@@ -58,7 +58,7 @@ foreach my $group (keys %groups) {
 	my ($instrument,$run_id,$flowcell_id,$lane,$tile,$x,$y) = (split ":", $info);
 	my $readgroup = $flowcell_id . "." . $lane . "." . $sample ;
 	chomp($readgroup);	
-	printf "FAM" . $fam_counter . "," . $sample . "," . $readgroup . "," . $sample . "," . $sample . "," . $lane . "," . $left . "," . $right . "," . "0,0,other,-9\n";
+	printf "FAM" . $fam_counter . "," . $sample . "," . $readgroup . "," . $sample . "," . $sample . "," . $lane . "," . $left . "," . $right . "," . "0,0,other,0\n";
 
 }
 

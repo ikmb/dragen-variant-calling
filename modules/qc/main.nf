@@ -1,3 +1,22 @@
+process validate_samplesheet {
+
+	label 'default'
+
+	input:
+	path(csv)
+
+	output:
+	path(ss)
+
+	script:
+	ss = "Samples.validated.csv"
+
+	"""
+		validate_samplesheet.pl --infile $csv
+		cp $csv $ss
+	"""
+}
+
 process target_metrics {
 
 	label 'default'

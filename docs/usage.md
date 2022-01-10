@@ -39,7 +39,7 @@ For trio analysis `--trio` you have to code your PED like information into the s
 
 * MaternalID same principle as for PaternalID
 
-* Sex lists the gender of the sample (1 = female, 2 = male, other = unknown)
+* Sex lists the gender of the sample (1 = male, 2 = female, other = unknown)
 
 * Phenotype lists whether the sample is affected by the phenotype of interest (if any). Allowed values are: 0 = missing, 1 = unaffected, 2 = affected, -9 = missing. 
 

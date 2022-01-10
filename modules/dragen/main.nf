@@ -27,24 +27,24 @@ process make_gvcf {
 
 	def options = ""
 	if (params.exome) {
-		options += "--vc-target-bed $bed "
+		options = options.concat("--vc-target-bed $bed ")
 		if (params.cnv) {
-			options += "--cnv-target-bed $bed --cnv-enable-self-normalization true --cnv-interval-width 500 "
+			options = options.concat("--cnv-target-bed $bed --cnv-enable-self-normalization true --cnv-interval-width 500 ")
 		}
 		if (params.sv) {
-			options += "--sv-target-bed $bed "
+			options = options.concat("--sv-target-bed $bed ")
 		}
 	} else {
 		if (params.cnv) {
-			options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
+			options = options.concat("--cnv-enable-self-normalization true --cnv-interval-width 1000 ")
 		}
 	}
 		  
 	if (params.cnv) {
-		options += "--enable-cnv true --enable-cnv-tracks true "
+		options = options.concat("--enable-cnv true ")
 	}
 	if (params.sv) {
-		options += "--enable-sv true "
+		options = options.concat("--enable-sv true ")
 	}
 	"""
 	mkdir -p $outdir
@@ -204,7 +204,7 @@ process make_vcf {
 	output:
 	path(vcf)
 	tuple val(indivID),val(sampleID),path(bam),path(bai)
-	path("${outdir}/*.csv")
+	path("${outdir}/*")
 	path(dragen_log)
 
 	script:
@@ -217,24 +217,24 @@ process make_vcf {
 	def options = ""
 
 	if (params.exome) {
-		options = "--vc-target-bed $bed "
+		options = options.concat("--vc-target-bed $bed ")
 		if (params.cnv) {
-                	options += "--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 "
+                	options = options.concat("--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 ")
                 }
                 if (params.sv) {
-			options += "--sv-target-bed $bed "
+			options = options.concat("--sv-target-bed $bed ")
                 }
         } else {
 		if (params.cnv) {
-			options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
+			options = options.concat("--cnv-enable-self-normalization true --cnv-interval-width 1000 ")
                 }
         }
 
 	if (params.cnv) {
-		options += "--enable-cnv true --enable-cnv-tracks true "
+		options = options.concat("--enable-cnv true ")
         }
 	if (params.sv) {
-        	options += "--enable-sv true "
+        	options = options.concat("--enable-sv true ")
         }
                   
         """
@@ -286,9 +286,9 @@ process call_cnvs {
 
 	def options = ""
 	if (params.exome) {
-		options += "--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 "
+		options = options.concat("--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 ")
 	} else {
-		options += "--cnv-enable-self-normalization true --cnv-interval-width 1000 "
+		optoins = options.concat("--cnv-enable-self-normalization true --cnv-interval-width 1000 ")
 	}
 
 	results = "cnv_" + sampleID
