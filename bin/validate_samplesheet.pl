@@ -75,7 +75,7 @@ foreach my $line (@lines) {
 	if (exists $fam_counter{$fam_id}) {
 		$fam_counter{$fam_id} += 1;
 	} else {
-		$fam_counter{$fam_id} = 0;
+		$fam_counter{$fam_id} = 1;
 	}
 
 	if (!defined $valid_sex{$sex}) {
@@ -117,6 +117,7 @@ foreach my $line (@lines) {
 if (defined $trio) {
 	foreach my $fam (keys %fam_counter){
 		my $count = $fam_counter{$fam};
+		printf $count . "\n";
 		if ($count < 3) {
 			die "Family $fam has more than one but less than 3 member\n";
 		}
