@@ -80,7 +80,7 @@ process merge_gvcfs {
 
 	label 'dragen'
 
-	publishDir "${params.outdir}/gVCF", mode: 'copy'
+	publishDir "${params.outdir}/Dragen/gVCF", mode: 'copy'
 
 	input:
 	path(gvcfs)
@@ -131,7 +131,7 @@ process trio_call {
 
 	label 'dragen'
 
-	publishDir "${params.outdir}/TrioCall", mode: 'copy'
+	publishDir "${params.outdir}/Dragen/TrioCall", mode: 'copy'
 
 	input:
 	tuple val(famID),path(gvcfs)
@@ -184,7 +184,7 @@ process joint_call {
 
 	label 'dragen'
 
-       	publishDir "${params.outdir}/JointCall", mode: 'copy'
+       	publishDir "${params.outdir}/Dragen/JointCall", mode: 'copy'
 
 	input:
 	path(mgvcf) 
