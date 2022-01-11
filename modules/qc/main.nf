@@ -1,3 +1,26 @@
+process validate_samplesheet {
+
+	label 'default'
+
+	input:
+	path(csv)
+
+	output:
+	path(ss)
+
+	script:
+	ss = "Samples.validated.csv"
+	def options = ""
+	if (params.trio) {
+		options = "--trio 1"
+	}
+
+	"""
+		validate_samplesheet.pl --infile $csv $options
+		cp $csv $ss
+	"""
+}
+
 process target_metrics {
 
 	label 'default'

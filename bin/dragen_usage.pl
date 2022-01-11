@@ -46,31 +46,31 @@ data: |\n  <dl class="dl-horizontal">
 
 printf $header . "\n";
 
-open(my $BEFORE, '<', $before) or die "FATAL: Can't open file: $before for reading.\n";
+my @files = glob( '*.dragen_log.*.log' );
 
-chomp(my @lines = <$BEFORE>);
+my @counts ;
+
+foreach my $file (@files) {
+
+	open(my $IN, '<', $file) or die "FATAL: Can't open file: $file for reading.\n";
+	chomp(my @lines = <$IN>);
  
-# LICENSE_MSG| License Genome          : used 882.5/100000 Gbases since 2021-Nov-16 (882511111618 bases, 0.9%)
+	# LICENSE_MSG| License Genome          : used 882.5/100000 Gbases since 2021-Nov-16 (882511111618 bases, 0.9%)
 
-my $line = @lines[1] ;
+	my $line = @lines[1] ;
 
-my $bases_before = (split " ", $line)[-3] ;
-$bases_before =~ s/\(// ;
+	my $bases = (split " ", $line)[-3] ;
+	$bases =~ s/\(// ;
+	
+	push(@counts,$bases);
 
-close($BEFORE);
+	close($IN);
 
-open(my $AFTER, '<', $after) or die "FATAL: Can't open file: $after for reading\n";
+}
 
-chomp(my @lines  = <$AFTER>);
+my @sorted = sort { $a <=> $b } @counts;
 
-my $line = @lines[1] ;
-
-my $bases_after = (split " ", $line)[-3] ;
-$bases_after =~ s/\(// ;
-
-close($AFTER);
-
-my $used = $bases_after - $bases_before ;
+my $used = @sorted[-1] - @sorted[0] ;
 
 my $entry = "<dt>Bases consumed</dt><dd><samp>$used</samp></dd>" ;
 printf "    $entry\n";

@@ -37,40 +37,13 @@ my @ped;
 
 foreach my $line (<SAMPLES>) {
 
-	my @elements = split "," , $line ;
-	my $file = @elements[-6];
-	my $fpath = (split "/", $file)[-1];
+	my @elements = split ";" , $line ;
+	my $file = @elements[-2];
+	my $fpath = (split "/", $file)[-2];
 	if (defined $set{ $fpath }) {
-		my $updated = join ",",  @elements[2 .. $#elements-4] ;
-		chomp($updated);
-		printf $updated . "\n";
-		if ($ped eq 1) {
-			my $ped_line = "";
-			my $fam = @elements[0];
-			my $sample = @elements[3];
-			my $pat = @elements[8];
-			my $mat = @elements[9];
-			my $sex = @elements[10];
-			my $pheno = @elements[11];
-			$ped_line = $fam . "\t" . $sample . "\t" . $pat . "\t" . $mat . "\t" . $sex . "\t" . $pheno . "\n";
-	
-			push(@ped,$ped_line);	 
-		}
+		my ($famid,$individ,$rgid,$rgsm,$rglb,$lane,$patid,$matid,$sex,$pheno,$left,$right) = @elements;
+		puts $rgid . "," . $rgsm . "," . $rglb . "," . $lane . "," . $left . "," . $right . "\n";
 	}
 }
 
 close(SAMPLES);
-
-if ($ped eq 1) {
-
-	open(STDOUT,">family.ped") or die ("Cannot open family.ped");
-
-	my @unique = do { my %seen; grep { !$seen{$_}++ } @ped };
-	foreach my $u (@unique) {
-		printf STDOUT $u . "\n";
-	}
-
-	close(STDOUT);
-
-}
-			

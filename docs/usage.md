@@ -22,8 +22,8 @@ perl dragen_samplesheet.pl --folder "/path/to/reads/" > Samples.csv
 This script assumes the current naming convention for Illumina paired-end read files generated at the CCGA. If this is not the case, you may have to produce this file "manually":
 
 ```bash
-famID,indivID,RGID,RGSM,RGLB,Lane,Read1File,Read2File,PaternalID,MaternalID,Sex,Phenotype
-FAMASHK,NA24143,HHNVKDRXX.2.I33978-L2,I33978-L2,I33978-L2,2,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33978-L2_S60_L002_R1_001.fastq.gz,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33978-L2_S60_L002_R2_001.fastq.gz,0,0,1,2
+famID,indivID,RGID,RGSM,RGLB,Lane,PaternalID,MaternalID,Sex,Phenotype,Read1File,Read2File
+FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,0,0,other,0,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R1_001.fastq.gz,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R2_001.fastq.gz
 ```
 #### Standard analysis
 
@@ -39,7 +39,7 @@ For trio analysis `--trio` you have to code your PED like information into the s
 
 * MaternalID same principle as for PaternalID
 
-* Sex lists the gender of the sample (1 = female, 2 = male, other = unknown)
+* Sex lists the gender of the sample (1 = male, 2 = female, other = unknown)
 
 * Phenotype lists whether the sample is affected by the phenotype of interest (if any). Allowed values are: 0 = missing, 1 = unaffected, 2 = affected, -9 = missing. 
 

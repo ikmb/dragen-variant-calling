@@ -15,35 +15,12 @@ process dragen_version {
 	"""
 }
 
-process dragen_license {
-
-	label 'dragen'
-
-	publishDir "${params.outdir}/DragenLogs/", mode: 'copy'
-
-	input:
-	val(label)
-	path(trigger_file)
-
-	output:
-	path(dragen_license_log)
-	path(trigger_file)
-
-	script:
-	dragen_license_log = params.run_name + ".dragen_license.${label}.log"
-
-	"""
-		/opt/edico/bin/dragen_lic -f genome &> $dragen_license_log
-	"""
-}
-
 process dragen_usage {
 
 	publishDir "${params.outdir}/DragenLogs/", mode: 'copy'
 
 	input:
-	path(before)
-	path(after)
+	path(logs)
 
 	output:
 	path(yaml)
@@ -52,7 +29,7 @@ process dragen_usage {
 	yaml = "dragen_usage_mqc.yaml"
 
 	"""
-		dragen_usage.pl --before $before --after $after > $yaml
+		dragen_usage.pl > $yaml
 	"""
 
 }
