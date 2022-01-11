@@ -37,7 +37,7 @@ my @ped;
 
 foreach my $line (<SAMPLES>) {
 
-	my @elements = split "," , $line ;
+	my @elements = split ";" , $line ;
 	my $file = @elements[-2];
 	my $fpath = (split "/", $file)[-2];
 	if (defined $set{ $fpath }) {
