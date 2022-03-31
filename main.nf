@@ -56,7 +56,6 @@ if (!params.assembly) {
 	exit 1, "Must provide an assembly name (--assembly)"
 }
 
-params.assembly = "hg38"
 params.chromosomes = [ "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY", "chrM" ]
 
 if (params.assembly == "hg19") {
@@ -106,16 +105,17 @@ if (params.expansion_hunter) {
 }
  
 // import workflows
-include { EXOME_QC ; WGS_QC  } from "./workflows/qc/main.nf" params(params)
-include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf" params(params)
-include { VEP } from "./workflows/vep/main.nf" params(params)
-include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf" params(params)
-include { intervals_to_bed } from "./modules/intervals/main.nf" params(params)
-include { vcf_stats } from "./modules/vcf/main.nf" params(params)
-include { multiqc ; validate_samplesheet } from "./modules/qc/main.nf" params(params)
-include { dragen_usage } from "./modules/logging/main.nf" params(params)
-include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf" params(params)
-  
+include { EXOME_QC ; WGS_QC  } from "./workflows/qc/main.nf"
+include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf"
+include { VEP } from "./workflows/vep/main.nf"
+include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf"
+include { intervals_to_bed } from "./modules/intervals/main.nf"
+include { vcf_stats } from "./modules/vcf/main.nf"
+include { multiqc ; validate_samplesheet } from "./modules/qc/main.nf"
+include { dragen_usage } from "./modules/logging/main.nf"
+include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf"
+include { MANTA } from "./modules/manta/main.nf"  
+
 // Input channels
 Channel.fromPath( file(params.ref) )
 	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
@@ -187,6 +187,10 @@ workflow {
 
 	if (params.expansion_hunter) {
 		EXPANSION_HUNTER(bam,expansion_catalog)
+	}
+
+	if (params.manta) {
+		MANTA(bam)
 	}
 
 	if (params.vep) {

@@ -28,7 +28,7 @@ workflow DRAGEN_JOINT_CALLING {
 		samplesheet
 
 	main:
-		make_gvcf(reads,bed.collect(),samplesheet.collect())
+		make_gvcf(reads.groupTuple(by: [0,1,2]),bed.collect(),samplesheet.collect())
 		merge_gvcfs(make_gvcf.out[0].collect(),bed.collect())
 		joint_call(merge_gvcfs.out[0].collect(),bed.collect())
 		vcf_index(joint_call.out[0])
@@ -50,7 +50,7 @@ workflow DRAGEN_TRIO_CALLING {
 		samplesheet
 
 	main:
-		make_gvcf(reads,bed.collect(),samplesheet.collect())
+		make_gvcf(reads.groupTuple(by: [0,1,2]),bed.collect(),samplesheet.collect())
 		trio_call(make_gvcf.out[0].groupTuple(by: 0),bed.collect(),samplesheet.collect())
 		vcf_index(trio_call.out[0])
 		vcf_by_sample(vcf_index.out.collect(),make_gvcf.out[2])
