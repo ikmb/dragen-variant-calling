@@ -120,12 +120,12 @@ include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf" params(params)
 Channel.fromPath( file(params.ref) )
 	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
 	.set { ref_fasta }
- 
-Channel.from(file(params.samples))
-       	.splitCsv(sep: ';', header: true)
-	.map{ row-> tuple(row.famID,row.indivID,row.RGSM,file(row.Read1File),file(row.Read2File)) }
-	.set { Reads }
 
+Channel.fromPath(params.samples)
+	.splitCsv(sep: ',', header: true)
+	.map { row -> tuple(row.famID,row.indivID,row.RGSM,file(row.Read1File, checkIfExists: true),file(row.Read2File, checkIfExists: true)) }
+	.set { Reads }
+  
 Channel.fromPath(params.samples)
 	.set { Samplesheet }
  
