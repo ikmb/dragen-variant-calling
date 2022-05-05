@@ -69,7 +69,9 @@ params.dragen_ref_dir = params.genomes[params.assembly].dragenidx
 params.ref = params.genomes[params.assembly].fasta
 params.dbsnp = params.genomes[params.assembly].dbsnp
 
- panels = Channel.empty()
+panels = Channel.empty()
+
+params.kill_list = false
 
 // Mode-dependent settings
 if (params.exome) {
@@ -86,6 +88,12 @@ if (params.exome) {
         Channel.fromPath(baits)
                 .ifEmpty {exit 1; "Could not find the bait intervals for this exome kit..." }
                 .set { Baits }
+
+	if (params.kill) {
+        	params.kill_list = params.kill
+	} else if (params.kit && params.genomes[params.assembly].kits[params.kit].kill) {
+        	params.kill_list = params.genomes[params.assembly].kits[params.kit].kill
+	}
 
 	if (params.panel) {
         	panel = params.genomes[params.assembly].panels[params.panel].intervals
