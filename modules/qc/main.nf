@@ -76,22 +76,3 @@ process wgs_metrics {
 	"""
 }
 
-process multiqc {
-
-	label 'default'
-
-	publishDir "${params.outdir}/MultiQC", mode: 'copy'
-
-	input:
-	path('*')
-
-	output:
-	path("multiqc_report.html")
-
-	script:
-	
-	"""
-		multiqc .
-	"""
-}
-
