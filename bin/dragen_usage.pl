@@ -46,7 +46,7 @@ data: |\n  <dl class="dl-horizontal">
 
 printf $header . "\n";
 
-my @files = glob( '*.dragen_log.*.log' );
+my @files = glob( '*dragen_log.*.log' );
 
 my @counts ;
 

@@ -154,7 +154,6 @@ while (<$IN>) {
 		printf $chrom . "\t" . $pos . "\t" . $rsid . "\t" . $ref . "\t" . $alt . "\t" . $qual . "\t" . $filter . "\t" . $update . "\t" . $format . "\t"  . $patients . "\n";		
 
 	}
-
 	
 }
 

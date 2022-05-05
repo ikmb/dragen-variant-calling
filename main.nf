@@ -172,7 +172,7 @@ workflow {
 		vcf_sample = DRAGEN_JOINT_CALLING.out.vcf_sample
 		dragen_logs = DRAGEN_JOINT_CALLING.out.dragen_logs
 	} else if (params.trio) {
-		DRAGEN_TRIO_CALLING(Reads,BedIntervals,samples)
+			DRAGEN_TRIO_CALLING(Reads,BedIntervals,samples)
                 vcf = DRAGEN_TRIO_CALLING.out.vcf
                 bam = DRAGEN_TRIO_CALLING.out.bam
 		vcf_sample = DRAGEN_TRIO_CALLING.out.vcf_sample

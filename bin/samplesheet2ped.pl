@@ -37,8 +37,9 @@ open(SAMPLES,$samples) or die ("Could not open sample sheet\n");
 
 foreach my $line (<SAMPLES>) {
 	chomp($line);
-	my @elements = split(";", $line);
-	my ($famid,$individ,$rgid,$rgsm,$rglb,$lane,$paternal,$maternal,$sex,$pheno,$left,$right) = @elements;
+	my @elements = split(",", $line);
+	# famID,indivID,RGID,RGSM,RGLB,Lane,Read1File,Read2File,PaternalID,MaternalID,Sex,Phenotype
+	my ($famid,$individ,$rgid,$rgsm,$rglb,$lane,$left,$right,$paternal,$maternal,$sex,$pheno) = @elements;
 	if (defined $set{ $rgsm }) {
 		printf $famid . "\t" . $rgsm . "\t" . $paternal . "\t" . $maternal . "\t" . $sex . "\t" . $pheno . "\n";
 	}
