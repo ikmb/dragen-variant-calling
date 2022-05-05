@@ -69,6 +69,10 @@ params.dragen_ref_dir = params.genomes[params.assembly].dragenidx
 params.ref = params.genomes[params.assembly].fasta
 params.dbsnp = params.genomes[params.assembly].dbsnp
 
+panels = Channel.empty()
+
+params.kill_list = false
+
 // Mode-dependent settings
 if (params.exome) {
 
@@ -85,6 +89,28 @@ if (params.exome) {
                 .ifEmpty {exit 1; "Could not find the bait intervals for this exome kit..." }
                 .set { Baits }
 
+	if (params.kill) {
+        	params.kill_list = params.kill
+	} else if (params.kit && params.genomes[params.assembly].kits[params.kit].kill) {
+        	params.kill_list = params.genomes[params.assembly].kits[params.kit].kill
+	}
+
+	if (params.panel) {
+        	panel = params.genomes[params.assembly].panels[params.panel].intervals
+	        panels = Channel.fromPath(panel)
+	} else if (params.panel_intervals) {
+        	Channel.fromPath(params.panel_intervals)
+	        .ifEmpty { exit 1; "Could not find the specified gene panel (--panel_intervals)" }
+        	.set { panels }
+	} else if (params.all_panels) {
+        	panel_list = []
+	        panel_names = params.genomes[params.assembly].panels.keySet()
+        	panel_names.each {
+	                interval = params.genomes[params.assembly].panels[it].intervals
+        	        panel_list << file(interval)
+	        }
+        	panels = Channel.fromList(panel_list)
+	}
 } else {
 
 	BED = params.bed ?: params.genomes[params.assembly].bed
@@ -106,15 +132,17 @@ if (params.expansion_hunter) {
 }
  
 // import workflows
-include { EXOME_QC ; WGS_QC  } from "./workflows/qc/main.nf" params(params)
-include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf" params(params)
-include { VEP } from "./workflows/vep/main.nf" params(params)
-include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf" params(params)
-include { intervals_to_bed } from "./modules/intervals/main.nf" params(params)
-include { vcf_stats } from "./modules/vcf/main.nf" params(params)
-include { multiqc ; validate_samplesheet } from "./modules/qc/main.nf" params(params)
-include { dragen_usage } from "./modules/logging/main.nf" params(params)
-include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf" params(params)
+include { EXOME_QC ; WGS_QC  } from "./workflows/qc/main.nf"
+include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf"
+include { VEP } from "./workflows/vep/main.nf"
+include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf"
+include { intervals_to_bed } from "./modules/intervals/main.nf"
+include { vcf_stats } from "./modules/vcf/main.nf"
+include { validate_samplesheet } from "./modules/qc/main.nf"
+include { multicqc } from "./modules/multiqc/main.nf"
+include { dragen_usage } from "./modules/logging/main.nf"
+include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf"
+include { PANEL_QC } from "./workflows/panels/main.nf"
   
 // Input channels
 Channel.fromPath( file(params.ref) )
@@ -196,6 +224,7 @@ workflow {
 	if (params.exome) {	
 		EXOME_QC(bam,Targets,Baits)
 		coverage = EXOME_QC.out.cov_report
+		PANEL_QC(bam,panels,Targets)
 	} else {
 		WGS_QC(bam,BedIntervals)
 		coverage = WGS_QC.out.cov_report
