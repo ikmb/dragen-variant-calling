@@ -18,6 +18,7 @@ Required parameters:
 --trio				Run this as trio analysis
 
 Optional parameters:
+--kit				Exome kit to use (xGen_v2)
 --expansion_hunter		Run expansion hunter (default: true)
 --vep				Run Variant Effect Predictor (default: true)
 --interval_padding		Add this many bases to the calling intervals (default: 10)
@@ -71,8 +72,6 @@ params.dbsnp = params.genomes[params.assembly].dbsnp
 
 panels = Channel.empty()
 
-params.kill_list = false
-
 // Mode-dependent settings
 if (params.exome) {
 
@@ -89,12 +88,16 @@ if (params.exome) {
                 .ifEmpty {exit 1; "Could not find the bait intervals for this exome kit..." }
                 .set { Baits }
 
+	// List of known-bad targets
 	if (params.kill) {
         	params.kill_list = params.kill
 	} else if (params.kit && params.genomes[params.assembly].kits[params.kit].kill) {
         	params.kill_list = params.genomes[params.assembly].kits[params.kit].kill
-	}
+	} else {
+		params.kill_list = false
+	}	
 
+	// Specific target panels
 	if (params.panel) {
         	panel = params.genomes[params.assembly].panels[params.panel].intervals
 	        panels = Channel.fromPath(panel)
@@ -139,7 +142,7 @@ include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf"
 include { intervals_to_bed } from "./modules/intervals/main.nf"
 include { vcf_stats } from "./modules/vcf/main.nf"
 include { validate_samplesheet } from "./modules/qc/main.nf"
-include { multicqc } from "./modules/multiqc/main.nf"
+include { multiqc } from "./modules/multiqc/main.nf"
 include { dragen_usage } from "./modules/logging/main.nf"
 include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf"
 include { PANEL_QC } from "./workflows/panels/main.nf"

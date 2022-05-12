@@ -1,4 +1,5 @@
-include { target_metrics ; wgs_metrics ; multiqc } from './../../modules/qc/main.nf' params(params)
+include { target_metrics ; wgs_metrics } from './../../modules/qc/main.nf'
+include { multiqc } from "./../../modules/multiqc/main.nf"
 
 workflow EXOME_QC {
 

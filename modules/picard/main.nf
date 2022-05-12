@@ -1,5 +1,7 @@
 process PANEL_COVERAGE {
 
+	label 'default'
+
         publishDir "${params.outdir}/Summary/Panel/PanelCoverage", mode: "copy"
 
         input:
@@ -39,7 +41,7 @@ process PANEL_COVERAGE {
                         TARGET_INTERVALS=${panel} \
                         BAIT_INTERVALS=${panel} \
                         CLIP_OVERLAPPING_READS=false \
-                        REFERENCE_SEQUENCE=${params.fasta} \
+                        REFERENCE_SEQUENCE=${params.ref} \
                         TMP_DIR=tmp \
                         MINIMUM_MAPPING_QUALITY=$params.min_mapq \
                         PER_TARGET_COVERAGE=$target_coverage

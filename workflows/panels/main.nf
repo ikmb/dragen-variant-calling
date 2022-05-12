@@ -1,5 +1,5 @@
 include { PANEL_COVERAGE } from "./../../modules/picard/main.nf" params(params)
-include { MULTIQC_PANEL } from "./../../modules/multiqc/main.nf" params(params)
+include { multiqc_panel } from "./../../modules/multiqc/main.nf" params(params)
 
 workflow PANEL_QC {
 
@@ -10,11 +10,11 @@ workflow PANEL_QC {
 
 	main:
 		PANEL_COVERAGE(bam.combine(panels),targets.collect())
-		MULTIQC_PANEL(PANEL_COVERAGE.out[0])
+		multiqc_panel(PANEL_COVERAGE.out[0])
 	
 
 	emit:
-		qc = MULTIQC_PANEL.out
+		qc = multiqc_panel.out
 
 }
 	
