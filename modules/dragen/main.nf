@@ -27,6 +27,9 @@ process make_gvcf {
 	dragen_end = sampleID + "dragen_log.gvcf.end.log"
 
 	def options = ""
+	if (params.ml_dir) {
+		options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
+	}
 	if (params.exome) {
 		options = options.concat("--vc-target-bed $bed ")
 		if (params.cnv) {
@@ -147,6 +150,9 @@ process trio_call {
 
 	prefix = params.run_name + ".trio"
 	def options = ""
+	if (params.ml_dir) {
+                options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
+        }
 	if (params.exome) {
                 options = "--vc-target-bed $bed "
 	}
@@ -199,7 +205,11 @@ process joint_call {
 	prefix = params.run_name + ".joint_genotyped"
 	dragen_start = params.run_name + ".dragen_log.joint_calling.start.log"
 	dragen_end = params.run_name + ".dragen_log.joint_calling.end.log"
-		
+
+	def options = ""
+	if (params.ml_dir) {
+                options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
+        }		
 	"""
 
 		/opt/edico/bin/dragen_lic -f genome &> $dragen_start
@@ -213,7 +223,8 @@ process joint_call {
 		--variant $mgvcf \
 		--dbsnp $params.dbsnp \
 		--output-directory results \
-		--output-file-prefix $prefix
+		--output-file-prefix $prefix \
+		$options
 
 		mv results/*vcf.gz* . 
 
@@ -250,7 +261,9 @@ process make_vcf {
 	dragen_end = sampleID + ".dragen_log.vcf.end.log"
 			
 	def options = ""
-
+	if (params.ml_dir) {
+                options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
+        }
 	if (params.exome) {
 		options = options.concat("--vc-target-bed $bed ")
 		if (params.cnv) {

@@ -22,9 +22,12 @@ perl dragen_samplesheet.pl --folder "/path/to/reads/" > Samples.csv
 This script assumes the current naming convention for Illumina paired-end read files generated at the CCGA. If this is not the case, you may have to produce this file "manually":
 
 ```bash
-famID,indivID,RGID,RGSM,RGLB,Lane,PaternalID,MaternalID,Sex,Phenotype,Read1File,Read2File
-FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,0,0,other,0,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R1_001.fastq.gz,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R2_001.fastq.gz
+famID,indivID,RGID,RGSM,RGLB,Lane,Read1File,Read2File,PaternalID,MaternalID,Sex,Phenotype
+FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R1_001.fastq.gz,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R2_001.fastq.gz,0,0,other,0
 ```
+
+If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lanes libaries. The samplesheet generator script should take of this, usually. 
+
 #### Standard analysis
 
 If you are only interested in single VCFs per sample, you can leave the columns famID, PaternalID, MaternalID, Sex and Phenotype at their defaults.

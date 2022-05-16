@@ -70,6 +70,12 @@ params.dragen_ref_dir = params.genomes[params.assembly].dragenidx
 params.ref = params.genomes[params.assembly].fasta
 params.dbsnp = params.genomes[params.assembly].dbsnp
 
+if (params.genomes[params.assembly].ml_dir) {
+	params.ml_dir = params.genomes[params.assembly].ml_dir
+} else {
+	params.ml_dir = null
+}
+
 panels = Channel.empty()
 
 // Mode-dependent settings
