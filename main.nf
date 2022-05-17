@@ -24,6 +24,8 @@ Optional parameters:
 --interval_padding		Add this many bases to the calling intervals (default: 10)
 --cnv				Enable CNV calling (not recommended for exomes)
 --sv				Enable SV calling (not recommended for exomes)
+--hla 				Enable calling of class I HLA alleles
+--clingen			Enable high-precision calling of challening genes (CYP2D6, SMN, GBA) - WGS only. 
 
 Expert options (usually not necessary to change!):
 
@@ -57,6 +59,10 @@ if (!params.assembly) {
 	exit 1, "Must provide an assembly name (--assembly)"
 }
 
+if (params.exome && params.clingen) {
+	exit 1, "Cannot run the clinical gene sub-pipeline on exome data!"
+}
+
 params.assembly = "hg38"
 params.chromosomes = [ "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY", "chrM" ]
 
@@ -70,7 +76,8 @@ params.dragen_ref_dir = params.genomes[params.assembly].dragenidx
 params.ref = params.genomes[params.assembly].fasta
 params.dbsnp = params.genomes[params.assembly].dbsnp
 
-if (params.genomes[params.assembly].ml_dir) {
+// Apply ML filter on final call set, if defined
+if (params.genomes[params.assembly].ml_dir && params.ml) {
 	params.ml_dir = params.genomes[params.assembly].ml_dir
 } else {
 	params.ml_dir = null
@@ -132,19 +139,15 @@ if (params.exome) {
 } 
 
 if (params.expansion_hunter) {
-	catalog = params.genomes[params.assembly].expansion_catalog
-	Channel.fromPath(catalog)
-		.ifEmpty { 1; "Could not find expansion catalog for this assembly" }
-		.set { expansion_catalog }
+	params.expansion_json = params.genomes[params.assembly].expansion_catalog
 } else {
-	expansion_catalog = Channel.empty()
+	params.expansion_json = null
 }
  
 // import workflows
 include { EXOME_QC ; WGS_QC  } from "./workflows/qc/main.nf"
 include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf"
 include { VEP } from "./workflows/vep/main.nf"
-include { EXPANSION_HUNTER } from "./workflows/expansion_hunter/main.nf"
 include { intervals_to_bed } from "./modules/intervals/main.nf"
 include { vcf_stats } from "./modules/vcf/main.nf"
 include { validate_samplesheet } from "./modules/qc/main.nf"
@@ -178,11 +181,19 @@ if (params.exome) {
 	log.info "Kit:		${params.kit}"
 } else {
 	log.info "Mode:		WGS"
+	log.info "ClinGen	${params.clingen}"
+}
+if (params.ml_dir) {
+	log.info "ML:		${params.ml_dir}"
+} else {
+	log.info "No ML filtering ..."
 }
 log.info "Align format:	${params.out_format}"
 log.info "Trio mode:	${params.trio}"
 log.info "CNV calling:	${params.cnv}"
 log.info "SV calling:	${params.sv}"
+log.info "ExpansionHunter	${params.expansion_hunter}"
+log.info "HLA typing		${params.hla}"
 
 workflow {
 
@@ -194,6 +205,7 @@ workflow {
 	// rudementary check of samplesheet validity before we run Dragen	
 	validate_samplesheet(Samplesheet)
 	samples = validate_samplesheet.out
+	ch_qc = Channel.from([])
 
 	if (params.exome) {
 		intervals_to_bed(Targets)
@@ -208,22 +220,21 @@ workflow {
 		bam = DRAGEN_JOINT_CALLING.out.bam
 		vcf_sample = DRAGEN_JOINT_CALLING.out.vcf_sample
 		dragen_logs = DRAGEN_JOINT_CALLING.out.dragen_logs
+		ch_qc = ch_qc.mix(DRAGEN_JOINT_CALLING.out.qc)
 	} else if (params.trio) {
-			DRAGEN_TRIO_CALLING(Reads,BedIntervals,samples)
+		DRAGEN_TRIO_CALLING(Reads,BedIntervals,samples)
                 vcf = DRAGEN_TRIO_CALLING.out.vcf
                 bam = DRAGEN_TRIO_CALLING.out.bam
 		vcf_sample = DRAGEN_TRIO_CALLING.out.vcf_sample
 		dragen_logs = DRAGEN_TRIO_CALLING.out.dragen_logs
+		ch_qc = ch_qc.mix(DRAGEN_TRIO_CALLING.out.qc)
 	} else {
 		DRAGEN_SINGLE_SAMPLE(Reads,BedIntervals,samples)
 		vcf_sample = DRAGEN_SINGLE_SAMPLE.out.vcf
 		vcf = DRAGEN_SINGLE_SAMPLE.out.vcf
 		bam = DRAGEN_SINGLE_SAMPLE.out.bam
 		dragen_logs = DRAGEN_SINGLE_SAMPLE.out.dragen_logs
-	}
-
-	if (params.expansion_hunter) {
-		EXPANSION_HUNTER(bam,expansion_catalog)
+		ch_qc = ch_qc.mix(DRAGEN_SINGLE_SAMPLE.out.qc)
 	}
 
 	if (params.vep) {
@@ -243,5 +254,5 @@ workflow {
 	
 	dragen_usage(dragen_logs.collect())
 
-	multiqc(vcf_stats.out.concat(coverage,versions,dragen_usage.out).collect())	
+	multiqc(vcf_stats.out.concat(coverage,versions,dragen_usage.out,ch_qc).collect())	
 }

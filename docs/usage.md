@@ -55,11 +55,17 @@ Specifiy that this is an exome analysis - requires '--kit' as well.
 ### `--kit` 
 For WES samples, the enrichment kit can be specified to enable targetted analysis and QC metrics. The most likely option to use at the CCGA would be 'xGen_v2'.
 
+### `--clingen` [ false(default) | true ]
+Enable targeted calling routines for clinicallly relevant genes. This option only works with WGS data (i.e. not when specifiying --exome). 
+
 ### `--vep` [ true | false (default) ]
 Run the Variant Effect Predictor.
 
 ### `--expansion_hunter` [ true (default) | false ]
 Run the Expansion Hunter software. 
+
+### `--hla` [ false (default) | true ]
+Enable HLA calling (class I only). 
 
 ## Special options (need more testing, not to be used in production)
 
@@ -69,3 +75,5 @@ Enable CNV calling. This is currently only recommended for WGS data as there is 
 ###  `--sv` [ true | false (default) ]
 Enable structural variant calling. This is only recommended for WGS data.
 
+### `--ml` [ true | false (default) ]
+Use ML filter instead of built-in hard filtering only. Only available for hg38. 

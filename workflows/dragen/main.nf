@@ -17,6 +17,7 @@ workflow DRAGEN_SINGLE_SAMPLE {
 		bam = make_vcf.out[1]
 		vcf_sample = vcf_add_header.out
 		dragen_logs = make_vcf.out[3]
+		qc = make_vcf.out.qc
 }
 
 // joint calling with multiple samples
@@ -39,6 +40,7 @@ workflow DRAGEN_JOINT_CALLING {
 		vcf = vcf_add_header.out
 		vcf_sample = vcf_by_sample.out	
 		dragen_logs = make_gvcf.out[4].concat(merge_gvcfs.out[2],joint_call.out[2])
+		qc = make_gvcf.out.qc
 }
 
 // joint trio analysis
@@ -60,5 +62,6 @@ workflow DRAGEN_TRIO_CALLING {
 		vcf = vcf_add_header.out
 		vcf_sample = vcf_by_sample.out[0]
 		dragen_logs = make_gvcf.out[4].concat(trio_call.out[2])
+		qc = make_gvcf.out.qc
 
 }

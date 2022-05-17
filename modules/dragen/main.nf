@@ -14,11 +14,12 @@ process make_gvcf {
 	path(samplesheet)
 
 	output:
-	tuple val(famID),path("${outdir}/*.gvcf.gz")
-	tuple val(indivID),val(sampleID),path("${outdir}/*.${params.out_format}"),path("${outdir}/*.${params.out_index}")
-	tuple val(indivID),val(sampleID)
-	path("${outdir}")
-	tuple path(dragen_start),path(dragen_end)
+	tuple val(famID),path("${outdir}/*.gvcf.gz"), emit: gvcf
+	tuple val(indivID),val(sampleID),path("${outdir}/*.${params.out_format}"),path("${outdir}/*.${params.out_index}"), emit: bam
+	tuple val(indivID),val(sampleID), emit: sample
+	path("${outdir}/*"), emit: results
+	tuple path(dragen_start),path(dragen_end), emit: log
+	path("${outdir}/*.csv"), emit: qc
 
 	script:
 	gvcf = sampleID + ".gvcf.gz"
@@ -28,7 +29,7 @@ process make_gvcf {
 
 	def options = ""
 	if (params.ml_dir) {
-		options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
+		options = options.concat(" --vc-ml-dir=${params.ml_dir} --vc-ml-enable-recalibration=true ")
 	}
 	if (params.exome) {
 		options = options.concat("--vc-target-bed $bed ")
@@ -39,11 +40,19 @@ process make_gvcf {
 			options = options.concat("--sv-target-bed $bed ")
 		}
 	} else {
-		if (params.cnv) {
-			options = options.concat("--cnv-enable-self-normalization true --cnv-interval-width 1000 ")
+		if (params.clingen) {
+			options = options.concat(" --enable-cyp2d6=true --enable-smn=true --enable-gba=true ")
 		}
+		if (params.cnv) {
+			options = options.concat(" --cnv-enable-self-normalization true --cnv-interval-width 1000 ")
+		}
+        	if (params.expansion_hunter) {
+                	options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
+        	}
 	}
-		  
+	if (params.hla) {
+		options = options.concat(" --enable-hla true ")
+	}
 	if (params.cnv) {
 		options = options.concat("--enable-cnv true ")
 	}
@@ -142,9 +151,9 @@ process trio_call {
 	path(samplesheet)
 
 	output:
-	path("*hard-filtered.vcf.gz")
-	path("results")
-	tuple path(dragen_start),path(dragen_end)
+	path("*hard-filtered.vcf.gz"), emit: vcf
+	path("results/*"), emit: results
+	tuple path(dragen_start),path(dragen_end), emit: log
 
 	script:
 
@@ -197,9 +206,9 @@ process joint_call {
 	path(bed)
 
 	output:
-	path("*hard-filtered.vcf.gz")
-	path("results/*")
-	tuple path(dragen_start),path(dragen_end)
+	path("*hard-filtered.vcf.gz"), emit: vcf
+	path("results/*"), emit: results
+	tuple path(dragen_start),path(dragen_end), emit: log
 
 	script:
 	prefix = params.run_name + ".joint_genotyped"
@@ -209,7 +218,7 @@ process joint_call {
 	def options = ""
 	if (params.ml_dir) {
                 options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
-        }		
+        }
 	"""
 
 		/opt/edico/bin/dragen_lic -f genome &> $dragen_start
@@ -246,10 +255,11 @@ process make_vcf {
 	path(samplesheet)
 
 	output:
-	path(vcf)
-	tuple val(indivID),val(sampleID),path(bam),path(bai)
-	path("${outdir}/*")
-	tuple path(dragen_start),path(dragen_end)
+	path(vcf), emit: vcf
+	tuple val(indivID),val(sampleID),path(bam),path(bai), emit: bam
+	path("${outdir}/*"), emit: results
+	tuple path(dragen_start),path(dragen_end), emit: log
+        path("${outdir}/*.csv"), emit: qc
 
 	script:
 	vcf = sampleID + ".vcf.gz"
@@ -262,7 +272,7 @@ process make_vcf {
 			
 	def options = ""
 	if (params.ml_dir) {
-                options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
+                options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true ")
         }
 	if (params.exome) {
 		options = options.concat("--vc-target-bed $bed ")
@@ -273,11 +283,19 @@ process make_vcf {
 			options = options.concat("--sv-target-bed $bed ")
                 }
         } else {
+                if (params.clingen) {
+                        options = options.concat(" --enable-cyp2d6=true --enable-smn=true ")
+                }
 		if (params.cnv) {
 			options = options.concat("--cnv-enable-self-normalization true --cnv-interval-width 1000 ")
                 }
+        	if (params.expansion_hunter) {
+                	options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} --enable-smn=true ")
+        	}
         }
-
+        if (params.hla) {
+                options = options.concat(" --enable-hla true ")
+        }
 	if (params.cnv) {
 		options = options.concat("--enable-cnv true ")
         }
