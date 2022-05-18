@@ -1,5 +1,5 @@
-title: "Exome pipeline report"
-subtitle: "Best-practice workflow for clinical SNP calling"
+title: "DRAGEN pipeline report"
+subtitle: "Best-practice workflow for clinical SNP calling using DRAGEN"
 custom_logo: "ikmblogo.png"
 custom_logo_title: "Insitute of Clinical Molecular Biology, Kiel"
 custom_logo_url: "http://www.ikmb.uni-kiel.de"
@@ -10,16 +10,15 @@ extra_fn_clean_exts:
     - _duplicate_metrics.txt
 
 report_comment: >
-    This report has been generated automatically by the IKMB Diagnostic Exome pipeline.
-    For help interpreting the outputs, please see: https://github.com/ikmb/exome-seq
+    This report has been generated automatically by the IKMB DRAGEN pipeline.
+    For help interpreting the outputs, please see: https://github.com/ikmb/dragen-variant-calling
 
 report_header_info:
     - Contact E-mail: "b.loescher@ikmb.uni-kiel.de"
-    - Application Type: "Whole exome sequencing"
+    - Application Type: "Variant calling"
 
 top_modules:
     - 'general_stats'
     - 'picard'
     - 'picard_hsmetrics'
     - 'bcftools'
-    - 'sex_check'

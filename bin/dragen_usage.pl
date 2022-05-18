@@ -56,10 +56,11 @@ foreach my $file (@files) {
 	chomp(my @lines = <$IN>);
  
 	# LICENSE_MSG| License Genome          : used 882.5/100000 Gbases since 2021-Nov-16 (882511111618 bases, 0.9%)
+	# LICENSE_MSG| License Genome          : used 303.1/100001 Gbases since 2022-May-16
 
 	my $line = @lines[1] ;
-
-	my $bases = (split " ", $line)[-3] ;
+	my $consumed = (split " ", $line)[-4] ;
+	my $bases = (split "/", $consumed)[0];
 	$bases =~ s/\(// ;
 	
 	push(@counts,$bases);
@@ -72,5 +73,5 @@ my @sorted = sort { $a <=> $b } @counts;
 
 my $used = @sorted[-1] - @sorted[0] ;
 
-my $entry = "<dt>Bases consumed</dt><dd><samp>$used</samp></dd>" ;
+my $entry = "<dt>Gigabases consumed</dt><dd><samp>$used</samp></dd>" ;
 printf "    $entry\n";
