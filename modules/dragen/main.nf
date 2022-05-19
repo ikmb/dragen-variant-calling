@@ -290,7 +290,7 @@ process make_vcf {
 			options = options.concat("--cnv-enable-self-normalization true --cnv-interval-width 1000 ")
                 }
         	if (params.expansion_hunter) {
-                	options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} --enable-smn=true ")
+                	options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
         	}
         }
         if (params.hla) {
