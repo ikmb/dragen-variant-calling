@@ -262,7 +262,8 @@ process make_vcf {
         path("${outdir}/*.csv"), emit: qc
 
 	script:
-	vcf = sampleID + ".vcf.gz"
+	vcf = sampleID + ".hard-filtered.vcf.gz"
+	vcf_tbi = vcf +".tbi"
 	bam = sampleID +  "." + params.out_format
 	bai = bam + "." + params.out_index
 	outdir = sampleID + "_results"
@@ -280,7 +281,7 @@ process make_vcf {
                 	options = options.concat("--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 ")
                 }
                 if (params.sv) {
-			options = options.concat("--sv-target-bed $bed ")
+			options = options.concat("--sv-exome true --sv-call-regions-bed $bed ")
                 }
         } else {
                 if (params.clingen) {
@@ -327,9 +328,10 @@ process make_vcf {
                         --output-file-prefix $sampleID \
                         --output-format $params.out_format
                 	
-			mv $outdir/$vcf $vcf
 			mv $outdir/$bam $bam
 			mv $outdir/$bai $bai
+			mv $outdir/*filtered.vcf.gz $vcf
+			mv $outdir/*filtered.vcf.gz.tbi $vcf_tbi
 
 		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
 	"""

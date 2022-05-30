@@ -194,8 +194,8 @@ log.info "CNV calling:	${params.cnv}"
 log.info "SV calling:	${params.sv}"
 log.info "ExpansionHunter	${params.expansion_hunter}"
 log.info "HLA typing	${params.hla}"
-log.info "VEP prediction: 	${params.vep}"
-
+log.info "VEP prediction: ${params.vep}"
+log.info "---------------------------"
 workflow {
 
 	main:

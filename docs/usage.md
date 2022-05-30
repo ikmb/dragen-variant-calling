@@ -28,9 +28,15 @@ FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,/work_ifs/sukmb352/pr
 
 If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lanes libaries. The samplesheet generator script should take of this, usually. 
 
+### Analysis strategies
+
 #### Standard analysis
 
 If you are only interested in single VCFs per sample, you can leave the columns famID, PaternalID, MaternalID, Sex and Phenotype at their defaults.
+
+#### Joint calling
+
+Joint calling for cohorts produces one VCF file for the entire data set. To enable this, use the `--joint_calling` flag. 
 
 #### Trio analysis
 
@@ -75,5 +81,5 @@ Enable CNV calling. This is currently only recommended for WGS data as there is 
 ###  `--sv` [ true | false (default) ]
 Enable structural variant calling. This is only recommended for WGS data.
 
-### `--ml` [ true | false (default) ]
+### `--ml` [ true (default) | false ]
 Use ML filter instead of built-in hard filtering only. Only available for hg38. 
