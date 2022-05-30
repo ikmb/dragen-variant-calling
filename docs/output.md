@@ -18,6 +18,8 @@ Within the results folder, you find:
 - `Summary` 
   - `multiqc_report.html`: The MultiQC report for this analysis
 
+![](../images/multiqc_sample.png)
+
 </details>
 
 ## Patient Report
