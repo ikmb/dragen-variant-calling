@@ -27,7 +27,7 @@ if ($help) {
 my @files = glob( $folder . '/*.fastq.gz' );
 
 my %groups;
-
+my %samples;
 foreach my $file (@files) {
 	my $fpath = abs_path($file);
 	my $group = (split /_R[0-9]/, $file)[0];
@@ -43,8 +43,6 @@ my $fam_counter = 0 ;
 
 foreach my $group (keys %groups) {
 
-	$fam_counter += 1;
-
 	my @reads = @{ $groups{$group} };
 	my $left = @reads[0];
 	my $right = @reads[1];
@@ -52,6 +50,14 @@ foreach my $group (keys %groups) {
 	my $base_name = (split "/", $left)[-1];
 	my $sample = (split /_S[0-9]*/, $base_name)[0] ;
 	chomp($sample);
+
+	if (exists($samples{$sample})) {
+		$fam_counter = $samples{$sample};
+	} else {
+		$fam_counter += 1;
+		$samples{$sample} = $fam_counter;
+	}
+
 	my $header = `zcat $left | head -n1`;
 
 	my $info = (split " ",$header)[0] ;

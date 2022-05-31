@@ -61,6 +61,36 @@ Specifiy that this is an exome analysis - requires '--kit' as well.
 ### `--kit` 
 For WES samples, the enrichment kit can be specified to enable targetted analysis and QC metrics. The most likely option to use at the CCGA would be 'xGen_v2'.
 
+### `--panel`
+For practical reasons, it can be desirable to determine the coverage of a discrete set of target genes, such as for a gene panel. The pipeline currently
+supports the following panels:
+
+- Dilatative Kardiomyopathie [cardio_dilatative]
+- Dilatative Kardiomyopathie 2021 [cardio_dcm_2021]	
+- Hypertrophe Kardiomyopathie [cardio_hypertrophic]
+- Hypertrophe Kardiomyopathie 2021 [cardio_hcm_2021]
+- Non-Compaction Kardiomyopathie [cardio_non_compaction]
+- Pulmonale Hypertonie 2021 [cardio_pah_2021]
+- Gene Immundefekt Agammaglobulinämie (25kb panel) [IMM_AGG]
+- Gene Immundefekt Hypogammaglobulinämie (25kb panel) [IMM_HGG]
+- Gene Immundefekt großes Panel [IMM]
+- Gene Immundefekt intestinal (25kb panel) [IMM_IBD]
+- Breast cancer panel [ breast_cancer ]
+- Liver disease [ Liver ]
+- Intellectual disability [ Intellectual_disability ]
+
+Please note that this will also create additional run metrics, including a per-sample list of target exons that fall below a minimum sequence coverage.
+
+### `--all_panels`
+This is a short-cut function to enable the production of statistics for all currently defined panels (for a given reference assembly!). Mutually exclusive with `--panel` and `--panel_intervals`.
+
+### `--panel_intervals`
+This option allows the user to run non-defined panels. Must be in picard interval list format and match the sequence dictionary of the
+genome assembly to run against (use with care!!!). Usually, you would start with a target list in BED format and convert this into an interval list
+using the Picard Tools "BedToIntervalList" command.
+
+## Optional analyses
+
 ### `--clingen` [ false(default) | true ]
 Enable targeted calling routines for clinicallly relevant genes. This option only works with WGS data (i.e. not when specifiying --exome). 
 

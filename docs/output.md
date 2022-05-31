@@ -8,6 +8,7 @@ Within the results folder, you find:
 - [Patient reports](#patient-report)
 - [Joint Callset](#joint-callset)
 - [Trio Callset](#trio-callset)
+- [Variants](#variants)
 - [VEP](#vep)
 
 ## QC
@@ -60,6 +61,16 @@ Within the results folder, you find:
   - `*.hard-filtered.vcf.gz` : The hard-filtered call set of SNPs and INDELs
   - `*.vcf.gz` : The unfiltered callset of SNPs and INDELs
   - `.csv` : Several metrics used to generate the MultiQC report
+
+</details>
+
+## Variants
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `Variants`
+  - `*.final.vcf.gz` : The final callset with dbSNP IDs
 
 </details>
 
