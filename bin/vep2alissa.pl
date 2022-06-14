@@ -59,7 +59,15 @@ my %recover = ( "ada_score" => { "Type" => "Float", "Number" => "1"},
 		"existing_uORFs" => {"Type" => "String", "Number" => "1"},
 		"Mastermind_MMID3" => { "Type" => "String", "Number" => "1"},
 		"REVEL" => { "Type" => "Float", "Number" => "1" },
-		"SpliceAI_pred" => { "Type" => "String", "Number" => "1"}
+		"SpliceAI_pred_DP_AG" => { "Type" => "Float", "Number" => "1"},
+		"SpliceAI_pred_DP_AL" => { "Type" => "Float", "Number" => "1"},
+		"SpliceAI_pred_DP_DG" => { "Type" => "Float", "Number" => "1"},
+		"SpliceAI_pred_DP_DL" => { "Type" => "Float", "Number" => "1"},
+		"SpliceAI_pred_DS_AG" => { "Type" => "Float", "Number" => "1"},
+		"SpliceAI_pred_DS_AL" => { "Type" => "Float", "Number" => "1"},
+		"SpliceAI_pred_DS_DG" => { "Type" => "Float", "Number" => "1"},
+		"SpliceAI_pred_DS_DL" => { "Type" => "Float", "Number" => "1"},
+		"SpliceAI_cutoff" => { "Type" => "String", "Number" => "1"}
 	);
 
 while (<$IN>) {
@@ -83,7 +91,7 @@ while (<$IN>) {
 			$structure{$e} = $counter;
 			$counter += 1;
 		}
-		foreach my $r (keys %recover) {
+		foreach my $r (sort keys %recover) {
 
 			if (defined $structure{$r}) {
 				my $t = $recover{$r}{"Type"};
