@@ -29,11 +29,12 @@ Within the results folder, you find:
 <summary>Output files</summary>
 
 - `PatientID/SampleID`
-  - `*.bam`: The aligned reads in BAM format (exome analysis)
-  - `*.cram` : The aligned reads in CRAM format (WGS analysis)
-  - `*.hard-filtered.vcf.gz` : The hard-filtered call set of SNPs and INDELs
+  - `.bam`: The aligned reads in BAM format (exome analysis)
+  - `.cram` : The aligned reads in CRAM format (WGS analysis)
+  - `.hard-filtered.vcf.gz` : The hard-filtered call set of SNPs and INDELs
   - `SampleID_results`
-    - `*.cnv.vcf.gz` : The copy number calls in VCF format (optional)
+    - `.cnv.vcf.gz` : The copy number calls in VCF format (optional)
+    - `.session.xml` : An IGV session file to automatically load all relevant tracks
     - `.sv.vcf.gz` : The structural variant calls in VCF format (optional)
     - `.vcf.gz` : The unfiltered callset of SNPs and INDELs
     - `.csv` : Several metrics used to generate the MultiQC report
@@ -46,8 +47,8 @@ Within the results folder, you find:
 <summary>Output files</summary>
 
 - `JointCalling`
-  - `*.hard-filtered.vcf.gz` : The hard-filtered call set of SNPs and INDELs
-  - `*.vcf.gz` : The unfiltered callset of SNPs and INDELs
+  - `.hard-filtered.vcf.gz` : The hard-filtered call set of SNPs and INDELs
+  - `.vcf.gz` : The unfiltered callset of SNPs and INDELs
   - `.csv` : Several metrics used to generate the MultiQC report
 
 </details>
@@ -58,8 +59,8 @@ Within the results folder, you find:
 <summary>Output files</summary>
 
 - `TrioCall/results`
-  - `*.hard-filtered.vcf.gz` : The hard-filtered call set of SNPs and INDELs
-  - `*.vcf.gz` : The unfiltered callset of SNPs and INDELs
+  - `.hard-filtered.vcf.gz` : The hard-filtered call set of SNPs and INDELs
+  - `.vcf.gz` : The unfiltered callset of SNPs and INDELs
   - `.csv` : Several metrics used to generate the MultiQC report
 
 </details>
@@ -70,7 +71,7 @@ Within the results folder, you find:
 <summary>Output files</summary>
 
 - `Variants`
-  - `*.final.vcf.gz` : The final callset with dbSNP IDs
+  - `.final.vcf.gz` : The final callset with dbSNP IDs
 
 </details>
 
@@ -80,8 +81,8 @@ Within the results folder, you find:
 <summary>Output files</summary>
 
 - `VEP`
-  - `*.vep.vcf.gz` - The VEP annotated (multi-sample) VCF file
-  - `*.alissa2vep.vcf.gz` - The Alissa-compatible annotated VCF file
+  - `.vep.vcf.gz` - The VEP annotated (multi-sample) VCF file
+  - `.alissa2vep.vcf.gz` - The Alissa-compatible annotated VCF file
 
 </details>
 

@@ -10,6 +10,30 @@ nextflow run ikmb/dragen-variant-calling --samples Samples.csv --assembly hg38 -
 
 Information on the command line options are listed in the following:
 
+### Analysis strategies
+
+#### Standard analysis
+
+If you are only interested in single VCFs per sample, you can leave the columns famID, PaternalID, MaternalID, Sex and Phenotype at their defaults.
+
+#### Joint calling
+
+Joint calling for cohorts produces one VCF file for the entire data set. To enable this, use the `--joint_calling` flag.
+
+#### Trio analysis
+
+For trio analysis `--trio` you have to code your PED like information into the samplesheet.
+
+* famID is used to group samples into a set for trio analysis
+
+* PaternalID is used to specify fatherhood; in a trio analysis, the parents would have a 0 here; the child would list the value from the RGSM column of the father
+
+* MaternalID same principle as for PaternalID
+
+* Sex lists the gender of the sample (1 = male, 2 = female, other = unknown)
+
+* Phenotype lists whether the sample is affected by the phenotype of interest (if any). Allowed values are: 0 = missing, 1 = unaffected, 2 = affected, -9 = missing.
+
 ## Options
 
 ### `--samples` [ CSV file (mandatory ]
@@ -27,30 +51,6 @@ FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,/work_ifs/sukmb352/pr
 ```
 
 If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lanes libaries. The samplesheet generator script should take of this, usually. 
-
-### Analysis strategies
-
-#### Standard analysis
-
-If you are only interested in single VCFs per sample, you can leave the columns famID, PaternalID, MaternalID, Sex and Phenotype at their defaults.
-
-#### Joint calling
-
-Joint calling for cohorts produces one VCF file for the entire data set. To enable this, use the `--joint_calling` flag. 
-
-#### Trio analysis
-
-For trio analysis `--trio` you have to code your PED like information into the samplesheet. 
-
-* famID is used to group samples into a set for trio analysis
-
-* PaternalID is used to specify fatherhood; in a trio analysis, the parents would have a 0 here; the child would list the value from the RGSM column of the father
-
-* MaternalID same principle as for PaternalID
-
-* Sex lists the gender of the sample (1 = male, 2 = female, other = unknown)
-
-* Phenotype lists whether the sample is affected by the phenotype of interest (if any). Allowed values are: 0 = missing, 1 = unaffected, 2 = affected, -9 = missing. 
 
 ### `--assembly` [ hg38 (default), hg19 ] 
 The mapping reference to be used by Dragen. We have two ALT aware versions available - hg38 with haplotypes and decoys (hg38HD) as well as hg19 (came with Dragen). 

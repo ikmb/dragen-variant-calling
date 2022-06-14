@@ -15,6 +15,7 @@ process make_gvcf {
 
 	output:
 	tuple val(famID),path("${outdir}/*.gvcf.gz"), emit: gvcf
+	path("${outdir}/*.gvcf.gz"), emit: gvcf_no_fam
 	tuple val(indivID),val(sampleID),path("${outdir}/*.${params.out_format}"),path("${outdir}/*.${params.out_index}"), emit: bam
 	tuple val(indivID),val(sampleID), emit: sample
 	path("${outdir}/*"), emit: results
@@ -37,7 +38,7 @@ process make_gvcf {
 			options = options.concat("--cnv-target-bed $bed --cnv-enable-self-normalization true --cnv-interval-width 500 ")
 		}
 		if (params.sv) {
-			options = options.concat("--sv-target-bed $bed ")
+			options = options.concat("--sv-exome true --sv-call-regions-bed $bed ")
 		}
 	} else {
 		if (params.clingen) {
@@ -46,10 +47,10 @@ process make_gvcf {
 		if (params.cnv) {
 			options = options.concat(" --cnv-enable-self-normalization true --cnv-interval-width 1000 ")
 		}
-        	if (params.expansion_hunter) {
-                	options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
-        	}
 	}
+	if (params.expansion_hunter) { 
+                options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
+        }
 	if (params.hla) {
 		options = options.concat(" --enable-hla true ")
 	}
@@ -77,6 +78,7 @@ process make_gvcf {
 		--enable-map-align true \
 		--enable-duplicate-marking true \
 		--vc-emit-ref-confidence GVCF \
+		--vc-enable-vcf-output true \
 		--intermediate-results-dir ${params.dragen_tmp} \
 		--output-directory $outdir \
 		--output-file-prefix $sampleID \
@@ -84,57 +86,6 @@ process make_gvcf {
 
 	/opt/edico/bin/dragen_lic -f genome &> $dragen_end
 
-	"""
-}
-
-// Merge gVCFs into multi-sample gVCF
-process merge_gvcfs {
-
-	label 'dragen'
-
-	publishDir "${params.outdir}/gVCF", mode: 'copy'
-
-	input:
-	path(gvcfs)
-	path(bed)
-
-	output:
-	path(merged_gvcf)
-	path("merged_vcf/*")
-	tuple path(dragen_start),path(dragen_end)
-
-	script:
-	def options = ""
-	if (params.exome) {
-		options = "--gg-regions ${bed}"
-	}
-	merged_gvcf = params.run_name + ".gvcf.gz"
-
-	dragen_start = params.run_name + ".dragen_log.merge_gvcf.start.log"
-	dragen_end = params.run_name + ".dragen_log.merge_gvcf.end.log"
-
-	"""
-	
-		/opt/edico/bin/dragen_lic -f genome &> $dragen_start
-
-		for i in \$(echo *.gvcf.gz)
-       			do echo \$i >> variants.list
-	        done
-
-		mkdir -p merged_vcf
-
-		/opt/edico/bin/dragen -f \
-			-r ${params.dragen_ref_dir} \
-			--enable-combinegvcfs true \
-			--output-directory merged_vcf \
-			--output-file-prefix ${params.run_name} \
-			--intermediate-results-dir ${params.dragen_tmp} \
-			$options \
-			--variant-list variants.list
-
-		mv merged_vcf/*vcf.gz . 
-
-		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
 	"""
 }
 
@@ -202,7 +153,7 @@ process joint_call {
        	publishDir "${params.outdir}/JointCall", mode: 'copy'
 
 	input:
-	path(mgvcf) 
+	path(gvcfs) 
 	path(bed)
 
 	output:
@@ -229,7 +180,7 @@ process joint_call {
 		-r ${params.dragen_ref_dir} \
 		--enable-joint-genotyping true \
 		--intermediate-results-dir ${params.dragen_tmp} \
-		--variant $mgvcf \
+		--variant ${gvcfs.join( ' --variant ')} \
 		--dbsnp $params.dbsnp \
 		--output-directory results \
 		--output-file-prefix $prefix \
@@ -290,9 +241,9 @@ process make_vcf {
 		if (params.cnv) {
 			options = options.concat("--cnv-enable-self-normalization true --cnv-interval-width 1000 ")
                 }
-        	if (params.expansion_hunter) {
-                	options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
-        	}
+        }
+	if (params.expansion_hunter) {
+                options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
         }
         if (params.hla) {
                 options = options.concat(" --enable-hla true ")
