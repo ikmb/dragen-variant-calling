@@ -110,6 +110,13 @@ if (params.exome) {
 		params.kill_list = false
 	}	
 
+	if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
+       		params.cnv_panel = params.genomes[params.assembly].kits[params.kit].cnv_panel
+		cnv_panel = file(params.cnv_panel,checkIfExists: true)
+	} else {
+        	params.cnv_panel = null
+	}
+
 	// Specific target panels
 	if (params.panel) {
         	panel = params.genomes[params.assembly].panels[params.panel].intervals
@@ -135,7 +142,7 @@ if (params.exome) {
 	Targets = Channel.empty()
 	Baits = Channel.empty()
 	BedFile = Channel.fromPath(BED)
-
+	params.cnv_panel = false
 } 
 
 if (params.expansion_hunter) {
@@ -191,6 +198,9 @@ if (params.ml_dir) {
 log.info "Align format:	${params.out_format}"
 log.info "Trio mode:	${params.trio}"
 log.info "CNV calling:	${params.cnv}"
+if (params.cnv_panel) {
+	"CNV Panel: 	${params.cnv_panel}"
+}
 log.info "SV calling:	${params.sv}"
 log.info "ExpansionHunter	${params.expansion_hunter}"
 log.info "HLA typing	${params.hla}"

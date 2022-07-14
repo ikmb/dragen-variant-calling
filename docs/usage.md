@@ -106,7 +106,8 @@ Enable HLA calling (class I only).
 ## Special options (need more testing, not to be used in production)
 
 ### `--cnv` [ true | false (default) ]
-Enable CNV calling. This is currently only recommended for WGS data as there is no built-in way to normalize single-sample exome data sets. 
+Enable CNV calling. This option works best with WGS data where self-normalization works adequately. For Exome data, it is 
+recommended to configure a curated panel of normals. This currently only exists for the xGen_v2 kit in combination with the hg38 reference assembly. All other exome analyses will perform self-normalization, if cnv calling is requested.
 
 ###  `--sv` [ true | false (default) ]
 Enable structural variant calling. This is only recommended for WGS data.

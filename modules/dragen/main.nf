@@ -16,7 +16,7 @@ process make_gvcf {
 	output:
 	tuple val(famID),path("${outdir}/*.gvcf.gz"), emit: gvcf
 	path("${outdir}/*.gvcf.gz"), emit: gvcf_no_fam
-	tuple val(indivID),val(sampleID),path("${outdir}/*.${params.out_format}"),path("${outdir}/*.${params.out_index}"), emit: bam
+	tuple val(indivID),val(sampleID),path("${outdir}/${align}"),path("${outdir}/${align_index}"), emit: bam
 	tuple val(indivID),val(sampleID), emit: sample
 	path("${outdir}/*"), emit: results
 	tuple path(dragen_start),path(dragen_end), emit: log
@@ -24,6 +24,8 @@ process make_gvcf {
 
 	script:
 	gvcf = sampleID + ".gvcf.gz"
+	align = sampleID + "." + params.out_format
+	align_index = align + "." + params.out_index
 	outdir = sampleID + "_results"
 	dragen_start = sampleID + "dragen_log.gvcf.start.log"
 	dragen_end = sampleID + "dragen_log.gvcf.end.log"
@@ -35,7 +37,12 @@ process make_gvcf {
 	if (params.exome) {
 		options = options.concat("--vc-target-bed $bed ")
 		if (params.cnv) {
-			options = options.concat("--cnv-target-bed $bed --cnv-enable-self-normalization true --cnv-interval-width 500 ")
+			options = options.concat("--cnv-target-bed $bed --cnv-interval-width 500 ")
+			if (params.cnv_panel) {
+				options = options.concat("--cnv-normals-list ${params.cnv_panel} ")
+			} else {
+				options.concat("--cnv-enable-self-normalization true ")
+			}
 		}
 		if (params.sv) {
 			options = options.concat("--sv-exome true --sv-call-regions-bed $bed ")
@@ -229,7 +236,12 @@ process make_vcf {
 	if (params.exome) {
 		options = options.concat("--vc-target-bed $bed ")
 		if (params.cnv) {
-                	options = options.concat("--cnv-target-bed $bed --cnv-enable-self-normalization true  --cnv-interval-width 500 ")
+                	options = options.concat("--cnv-target-bed $bed --cnv-interval-width 500 ")
+			if (params.cnv_panel) {
+				options = options.concat("--cnv-normals-list ${params.cnv_panel} ")
+			} else {
+				options = options.concat("--cnv-enable-self-normalization true ")
+			} 
                 }
                 if (params.sv) {
 			options = options.concat("--sv-exome true --sv-call-regions-bed $bed ")

@@ -3,6 +3,9 @@
 use strict;
 use Getopt::Long;
 use Cwd 'abs_path';
+use HTTP::Tiny;
+use Data::Dumper;
+use JSON;
 
 my $usage = qq{
 perl my_script.pl
@@ -24,7 +27,48 @@ if ($help) {
     exit(0);
 }
 
+my $http = HTTP::Tiny->new() ;
+my $server = 'http://172.21.99.59/restapi/';
+
 my @files = glob( $folder . '/*.fastq.gz' );
+my $project = (split "/", $folder)[-1];
+printf STDERR $project . "\n";
+
+my $ext = "/project/info/${project}";
+
+my $response = $http->get($server.$ext, { 
+	headers => { 'Content-type' => 'application/json' }
+});
+
+my $project_info = decode_json($response->{content});
+my $project_id = $project_info->{'project_id'};
+
+my %lookup;
+
+$ext = "/project/pool_info/${project_id}" ;
+$response = $http->get($server.$ext, {
+        headers => { 'Content-type' => 'application/json' }
+});
+
+my $data = decode_json($response->{content});
+my $pools = $data->{'pools'};
+
+foreach my $pool (@$pools) {
+	my $libs = $pool->{'libraries'};
+	foreach my $lib (@$libs) {
+		my $lib_name = $lib->{'library_name_id'};
+		my $lib_id = $lib->{'library_id'};
+		$ext = "/library/info/${lib_id}";
+		$response = $http->get($server.$ext, {
+   			headers => { 'Content-type' => 'application/json' }
+		});
+		my $lib_data = decode_json($response->{content});
+		my $external = $lib_data->{'sample'}->{'external_name'};
+		if ($external) {
+			$lookup{$lib_name} = $external;	
+		}
+	}
+}
 
 my %groups;
 my %samples;
@@ -56,6 +100,12 @@ foreach my $group (keys %groups) {
 
 	chomp($sample);
 
+	my $external_name = $sample;
+
+	if ($lookup{$sample}) {
+		$external_name = $lookup{$sample};
+	}
+		
 	printf STDERR $sample . "\n";
 	my $this_fam = 0;
 
@@ -73,7 +123,7 @@ foreach my $group (keys %groups) {
 	my ($instrument,$run_id,$flowcell_id,$lane,$tile,$x,$y) = (split ":", $info);
 	my $readgroup = $flowcell_id . "." . $lane . "." . $sample ;
 	chomp($readgroup);	
-	printf "FAM" . $this_fam . "," . $sample . "," . $readgroup . "," . $sample . "," . $sample . "," . $lane . "," . $left . "," . $right . ",0,0,other,0\n";
+	printf "FAM" . $this_fam . "," . $external_name . "," . $readgroup . "," . $external_name . "," . $sample . "," . $lane . "," . $left . "," . $right . ",0,0,other,0\n";
 
 }
 
