@@ -25,10 +25,10 @@ process target_metrics {
 
 	label 'default'
 
-	publishDir "${params.outdir}/${indivID}/${sampleID}/Picard_Metrics", mode: 'copy'
+	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/Picard_Metrics", mode: 'copy'
 
 	input:
-	tuple val(indivID), val(sampleID), file(bam), file(bai)
+	tuple val(meta), file(bam), file(bai)
 	path(targets)
 	path(baits) 
 
@@ -37,8 +37,8 @@ process target_metrics {
 	path(outfile_per_target)
 
 	script:
-	outfile = indivID + "_" + sampleID + ".hybrid_selection_metrics.txt"
-	outfile_per_target = indivID + "_" + sampleID + ".hybrid_selection_per_target_metrics.txt"
+	outfile = meta.patient_id + "_" + meta.sample_id + ".hybrid_selection_metrics.txt"
+	outfile_per_target = meta.patient_id + "_" + meta.sample_id + ".hybrid_selection_per_target_metrics.txt"
 
 	"""
 	picard -Xmx${task.memory.toGiga()}G CollectHsMetrics \
@@ -57,10 +57,10 @@ process wgs_metrics {
 
 	label 'mosdepth'
 
-	publishDir "${params.outdir}/${indivID}/${sampleID}/Metrics", mode: 'copy'
+	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/Metrics", mode: 'copy'
 	
 	input:
-	tuple val(indivID),val(sampleID),path(bam),path(bai)
+	tuple val(meta),path(bam),path(bai)
 	path(bed)
 
 	output:

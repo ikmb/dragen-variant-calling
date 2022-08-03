@@ -2,20 +2,20 @@ process expansion_hunter {
 
 	label 'expansion_hunter'
 
-	publishDir "${params.outdir}/${indivID}/${sampleID}/expansions", mode: 'copy'
+	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/expansions", mode: 'copy'
 
 	input:
-	tuple val(indivID),val(sampleID),val(bam),val(bai)
+	tuple val(meta),val(bam),val(bai)
 	path(catalog)
 
 	output:
-	tuple val(indivID),val(sampleID),path(report)
+	tuple val(meta),path(report)
 	path expansion_vcf
 
 	script:
-	report = indivID + "_" + sampleID + ".expansion_report.json"
-	expansion_vcf = indivID + "_" + sampleID + ".expansion_report.vcf"
-	prefix = indivID + "_" + sampleID + ".expansion_report"
+	report = meta.patient_id + "_" + meta.sample_id + ".expansion_report.json"
+	expansion_vcf = meta.patient_id + "_" + meta.sample_id + ".expansion_report.vcf"
+	prefix = meta.patient_id + "_" meta.sample_id + ".expansion_report"
 
 	"""
 		ExpansionHunter --reads $bam --reference ${params.ref} --variant-catalog $catalog --output-prefix $prefix
@@ -27,10 +27,10 @@ process expansion2xlsx {
 	
 	label 'default'
 
-	publishDir "${params.outdir}/${indivID}/${sampleID}/expansions", mode: 'copy'
+	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/expansions", mode: 'copy'
 
 	input:
-	tuple val(indivID),val(sampleID),file(report)
+	tuple val(meta),file(report)
 
 	output:
 	path(expansion_xls)

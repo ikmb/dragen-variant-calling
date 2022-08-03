@@ -1,4 +1,4 @@
-include { make_vcf ; make_gvcf  ; joint_call  ; trio_call } from './../../modules/dragen/main.nf' params(params)
+include { call_cnvs; make_vcf ; make_gvcf  ; joint_call  ; trio_call } from './../../modules/dragen/main.nf' params(params)
 include { vcf_add_header ; vcf_index ; vcf_by_sample } from "./../../modules/vcf/main.nf" params(params)
 
 // reads in, vcf out
@@ -9,11 +9,19 @@ workflow DRAGEN_SINGLE_SAMPLE {
 		bed
 		samplesheet
 	main:
-		make_vcf(reads.groupTuple(by: [0,1,2]),bed.collect(),samplesheet.collect())
+		make_vcf(reads.map {m,l,r ->
+				def new_meta =  [:]
+				new_meta.patient_id = m.patient_id
+	                        new_meta.sample_id = m.sample_id
+				tuple(new_meta,l,r)
+			}.groupTuple(),
+			bed.collect(),
+			samplesheet.collect()
+		)
 		vcf_index(make_vcf.out.vcf)
 		vcf_add_header(vcf_index.out)
 	emit:
-		vcf = vcf_add_header.out
+		vcf = vcf_add_header.out.vcf
 		bam = make_vcf.out.bam
 		vcf_sample = vcf_add_header.out
 		dragen_logs = make_vcf.out.log
@@ -29,8 +37,24 @@ workflow DRAGEN_JOINT_CALLING {
 		samplesheet
 
 	main:
-		make_gvcf(reads,bed.collect(),samplesheet.collect())
-		joint_call(make_gvcf.out.gvcf_no_fam.collect(),bed.collect())
+		make_gvcf(reads.map { m,l,r ->
+                                def new_meta =  [:]
+                                new_meta.patient_id = m.patient_id
+                                new_meta.sample_id = m.sample_id
+                                tuple(new_meta,l,r)
+                        }.groupTuple(),
+			bed.collect(),
+			samplesheet.collect())
+		)
+		joint_call(
+			make_gvcf.out.map { m,g -> 
+				def new_meta = [:]
+				new_meta.patient_id = "JointCalling"
+				new_meta.sample_id = "Dragen-JC"
+				tuple(new_meta,g) 
+			}.groupTuple(),
+			bed.collect()
+		)
 		vcf_index(joint_call.out.vcf)
 		vcf_by_sample(vcf_index.out,make_gvcf.out.sample)
 		vcf_add_header(vcf_index.out)
@@ -51,8 +75,26 @@ workflow DRAGEN_TRIO_CALLING {
 		samplesheet
 
 	main:
-		make_gvcf(reads,bed.collect(),samplesheet.collect())
-		trio_call(make_gvcf.out.gvcf.groupTuple(by: 0),bed.collect(),samplesheet.collect())
+		make_gvcf(reads.map {m,l,r ->
+                                def new_meta =  [:]
+                                new_meta.patient_id = m.patient_id
+                                new_meta.sample_id = m.sample_id
+                                tuple(new_meta,l,r)
+                        }.groupTuple(),
+			bed.collect(),
+			samplesheet.collect())
+		)
+		trio_call(
+			make_gvcf.out.gvcf.map { m,g ->
+				def trio_meta = [:]
+				trio_meta.family_id = m.family_id
+				trio_meta.patient_id = "TrioCalling"
+                                trio_meta.sample_id = "Dragen-TC"
+				tuple(trio_meta,g)
+			}.groupTuple(),
+			bed.collect(),
+			samplesheet.collect()
+		)
 		vcf_index(trio_call.out.vcf)
 		vcf_by_sample(vcf_index.out.collect(),make_gvcf.out.sample)
 		vcf_add_header(vcf_index.out)

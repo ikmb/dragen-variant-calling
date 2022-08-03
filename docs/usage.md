@@ -14,7 +14,7 @@ Information on the command line options are listed in the following:
 
 #### Standard analysis
 
-If you are only interested in single VCFs per sample, you can leave the columns famID, PaternalID, MaternalID, Sex and Phenotype at their defaults.
+If you are only interested in single VCFs per sample, you can leave the columns famID, PaternalID, MaternalID, Sex and Phenotype at their defaults (see below for information on how to build the input sample sheet).
 
 #### Joint calling
 
@@ -50,7 +50,7 @@ famID,indivID,RGID,RGSM,RGLB,Lane,Read1File,Read2File,PaternalID,MaternalID,Sex,
 FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R1_001.fastq.gz,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R2_001.fastq.gz,0,0,other,0
 ```
 
-If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lanes libaries. The samplesheet generator script should take of this, usually. 
+If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lane libaries. The samplesheet generator script should take care of this, usually. 
 
 ### `--assembly` [ hg38 (default), hg19 ] 
 The mapping reference to be used by Dragen. We have two ALT aware versions available - hg38 with haplotypes and decoys (hg38HD) as well as hg19 (came with Dragen). 

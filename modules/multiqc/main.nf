@@ -30,7 +30,7 @@ process multiqc_panel {
         tuple val(panel_name),path('*')
 
         output:
-        path("${panel_name}_multiqc.html")
+        path("${panel_name}_multiqc.html"), emit: report
 
         script:
 

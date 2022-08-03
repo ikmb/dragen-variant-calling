@@ -3,7 +3,7 @@ process vcf_split_seq {
 	label 'default'
 
 	input:
-	path(vcf)
+	tuple val(meta),path(vcf)
 
 	each chr from params.chromosomes
 
@@ -23,10 +23,10 @@ process vcf_index {
 	label 'default'
 
 	input:
-	path(vcf)
+	tuple val(meta),path(vcf)
 
 	output:
-	tuple path(vcf),path(tbi)
+	tuple val(meta),path(vcf),path(tbi), emit: vcf
 
 	script:
 	tbi = vcf + ".tbi"
@@ -44,7 +44,7 @@ process vcf_stats {
 	publishDir "${params.outdir}/logs", mode: 'copy'
 
         input:
-        tuple path(vcf),path(tbi)
+        tuple val(meta),path(vcf),path(tbi)
 
         output:
         path(vstats)
@@ -61,21 +61,21 @@ process vcf_by_sample {
 
 	label 'gatk'
 
-	publishDir "${params.outdir}/${indivID}/${sampleID}/", mode: 'copy'
+	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/", mode: 'copy'
 
 	input:
-	tuple path(vcf),path(tbi)
-	tuple val(indivID),val(sampleID)
+	tuple val(meta),path(vcf),path(tbi)
+	val(smeta)
 
 	output:
-	tuple path(vcf_sample),path(vcf_sample_tbi)
+	tuple val(smeta),path(vcf_sample),path(vcf_sample_tbi), emit: vcf
 
 	script:
-	vcf_sample = sampleID + ".vcf.gz"
+	vcf_sample = smeta.sample_id + ".vcf.gz"
 	vcf_sample_tbi = vcf_sample + ".tbi"
 
 	"""
-		gatk SelectVariants --remove-unused-alternates --exclude-non-variants -V $vcf -sn $sampleID -O variants.vcf.gz -OVI
+		gatk SelectVariants --remove-unused-alternates --exclude-non-variants -V $vcf -sn ${smeta.sample_id} -O variants.vcf.gz -OVI
                 gatk LeftAlignAndTrimVariants -R $params.ref -V variants.vcf.gz -O $vcf_sample -OVI
 
 	"""
@@ -87,11 +87,12 @@ process vcf_add_header {
 	label 'default'
 
         publishDir "${params.outdir}/Variants", mode: 'copy'
+
         input:
-        tuple file(vcf),file(tbi)
+        tuple val(meta),file(vcf),file(tbi)
 
         output:
-        tuple file(vcf_r),file(tbi_r)
+        tuple val(meta),file(vcf_r),file(tbi_r), emit: vcf
 
         script:
 
@@ -113,11 +114,11 @@ process vcf_compress {
 	publishDir "${outdir}", mode: 'copy'
 
 	input:
-	path(vcf)
+	tuple val(meta),path(vcf)
 	val(outdir)
 
 	output:
-	tuple path(vcf_gz),path(vcf_gz_tbi)
+	tuple val(meta),path(vcf_gz),path(vcf_gz_tbi), emit: vcf
 
 	script:
 	vcf_gz = vcf + ".gz"

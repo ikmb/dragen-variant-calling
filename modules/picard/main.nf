@@ -5,19 +5,19 @@ process PANEL_COVERAGE {
         publishDir "${params.outdir}/Summary/Panel/PanelCoverage", mode: "copy"
 
         input:
-        tuple val(indivID),val(sampleID),file(bam),file(bai),file(panel)
+        tuple val(meta),file(bam),file(bai),file(panel)
         path(targets)
 
         output:
-        tuple val(panel_name),path(coverage)
-        tuple val(indivID),val(sampleID),path(target_coverage_xls)
+        tuple val(panel_name),path(coverage), emit: coverage
+        tuple val(meta),path(target_coverage_xls)
         path(target_coverage)
 
         script:
         panel_name = panel.getSimpleName()
-        coverage = "${indivID}_${sampleID}.${panel_name}.hs_metrics.txt"
-        target_coverage = "${indivID}_${sampleID}.${panel_name}.per_target.hs_metrics.txt"
-        target_coverage_xls = "${indivID}_${sampleID}.${panel_name}.per_target.hs_metrics_mqc.xlsx"
+        coverage = "${meta.patient_id}_${meta.sample_id}.${panel_name}.hs_metrics.txt"
+        target_coverage = "${meta.patient_id}_${meta.sample_id}.${panel_name}.per_target.hs_metrics.txt"
+        target_coverage_xls = "${meta.patient_id}_${meta.sample_id}.${panel_name}.per_target.hs_metrics_mqc.xlsx"
 
         // optionally support a kill list of known bad exons
         def options = ""

@@ -153,7 +153,10 @@ if (params.expansion_hunter) {
  
 // import workflows
 include { EXOME_QC ; WGS_QC  } from "./workflows/qc/main.nf"
-include { DRAGEN_SINGLE_SAMPLE ; DRAGEN_TRIO_CALLING ; DRAGEN_JOINT_CALLING } from "./workflows/dragen/main.nf"
+include { DRAGEN_SINGLE_SAMPLE } from "./workflows/dragen/single_sample"
+include { DRAGEN_TRIO_CALLING } from "./workflows/dragen/trio_calling"
+include { DRAGEN_JOINT_CALLING } from "./workflows/dragen/joint_calling"
+include { WHATSHAP } from "./modules/whatshap"
 include { VEP } from "./workflows/vep/main.nf"
 include { intervals_to_bed } from "./modules/intervals/main.nf"
 include { vcf_stats } from "./modules/vcf/main.nf"
@@ -170,7 +173,7 @@ Channel.fromPath( file(params.ref) )
 
 Channel.fromPath(params.samples)
 	.splitCsv(sep: ',', header: true)
-	.map { row -> tuple(row.famID,row.indivID,row.RGSM,file(row.Read1File, checkIfExists: true),file(row.Read2File, checkIfExists: true)) }
+	.map { create_fastq_channel(it) }
 	.set { Reads }
   
 Channel.fromPath(params.samples)
@@ -205,6 +208,7 @@ log.info "SV calling:	${params.sv}"
 log.info "ExpansionHunter	${params.expansion_hunter}"
 log.info "HLA typing	${params.hla}"
 log.info "VEP prediction: ${params.vep}"
+log.info "Phasing:		${params.phase}"
 log.info "---------------------------"
 
 workflow {
@@ -253,6 +257,12 @@ workflow {
  	       VEP(vcf)
 	}
 
+	if (params.phase) {
+		WHATSHAP(
+			vcf_sample.join(bam)
+		)
+	}
+
 	if (params.exome) {	
 		EXOME_QC(bam,Targets,Baits)
 		coverage = EXOME_QC.out.cov_report
@@ -267,4 +277,26 @@ workflow {
 	dragen_usage(dragen_logs.collect())
 
 	multiqc(vcf_stats.out.concat(coverage,versions,dragen_usage.out,ch_qc).collect())	
+}
+
+def create_fastq_channel(LinkedHashMap row) {
+
+    // famID,indivID,RGID,RGSM,RGLB,Lane,Read1File,Read2File,PaternalID,MaternalID,Sex,Phenotype
+
+    def meta = [:]
+    meta.family_id = row.famID
+    meta.patient_id = row.indivID
+    meta.sample_id = row.RGSM
+    meta.library_id = row.RGLB
+    meta.lane = row.Lane
+    meta.readgroup_id = row.RGID
+    meta.paternal_id = row.PaternalID
+    meta.maternal_id = row.MaternalID
+    meta.sex = row.Sex
+    meta.phenotype = row.Phenotye
+
+    def array = []
+    array = [ meta, file(row.Read1File), file(row.Read2File) ]
+
+    return array
 }
