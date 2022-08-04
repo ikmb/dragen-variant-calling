@@ -191,7 +191,7 @@ if (params.exome) {
 	log.info "Kit:		${params.kit}"
 } else {
 	log.info "Mode:		WGS"
-	log.info "ClinGen	${params.clingen}"
+	log.info "ClinGen		${params.clingen}"
 }
 if (params.ml_dir) {
 	log.info "ML:		${params.ml_dir}"
@@ -208,7 +208,7 @@ log.info "SV calling:	${params.sv}"
 log.info "ExpansionHunter	${params.expansion_hunter}"
 log.info "HLA typing	${params.hla}"
 log.info "VEP prediction: ${params.vep}"
-log.info "Phasing:		${params.phase}"
+log.info "Phasing:	${params.phase}"
 log.info "---------------------------"
 
 workflow {

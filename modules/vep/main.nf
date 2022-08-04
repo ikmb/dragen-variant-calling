@@ -2,13 +2,15 @@ process vep {
 
 	label 'vep'
 
+	tag "${meta.patient_id}|${meta.sample_id}"
+
 	publishDir "${params.outdir}/VEP", mode: 'copy'
 
 	input:
 	tuple val(meta),path(vcf),path(tbi)
 
 	output:
-	path(vcf_annotated)
+	tuple val(meta),path(vcf_annotated), emit: vcf
 
 	script:
 	vcf_annotated = vcf.getBaseName() + ".vep.vcf"
@@ -46,10 +48,10 @@ process vep {
 process vep2alissa {
 
 	input:
-	path(vcf)
+	tuple val(meta),path(vcf)
 
 	output:
-	path(alissa_vcf)
+	tuple val(meta),path(alissa_vcf), emit: vcf
 
 	script:
 	alissa_vcf = vcf.getBaseName() + ".alissa2vep.vcf"
