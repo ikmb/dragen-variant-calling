@@ -1,7 +1,7 @@
 include { make_gvcf } from './../../modules/dragen/make_gvcf'
 include { trio_call } from './../../modules/dragen/trio_call'
-include { vcf_add_header ; vcf_index ; vcf_by_sample } from "./../../modules/vcf/main.nf"
-
+include { stage_vcf; vcf_add_header ; vcf_index ; vcf_by_sample; vcf_compress } from "./../../modules/vcf/main.nf"
+include { MANTA2ALISSA } from "./../../modules/helper/manta"
 // joint trio analysis
 workflow DRAGEN_TRIO_CALLING {
 
@@ -20,6 +20,13 @@ workflow DRAGEN_TRIO_CALLING {
 			bed.collect(),
 			samplesheet.collect()
 		)
+		if (params.sv) {
+			MANTA2ALISSA(make_gvcf.out.sv)
+			vcf_compress(MANTA2ALISSA.out.vcf,"${params.outdir}/ALISSA")
+		}
+		if (params.cnv) {
+			stage_vcf(make_gvcf.out.cnv,"${params.outdir}/ALISSA")
+		}
 		trio_call(
 			make_gvcf.out.gvcf.map { m,g ->
 				def trio_meta = [:]

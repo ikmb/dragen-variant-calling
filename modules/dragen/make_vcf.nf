@@ -16,6 +16,8 @@ process make_vcf {
 	tuple val(meta),path("${outdir}/*"), emit: results
 	tuple path(dragen_start),path(dragen_end), emit: log
         path("${outdir}/*.csv"), emit: qc
+	tuple val(meta),path("${outdir}/*.sv.vcf.gz"), optional: true, emit: sv
+	tuple val(meta),path("${outdir}/*.cnv.vcf.gz"), optional: true, emit: cnv
 
 	script:
 	vcf = meta.sample_id + ".hard-filtered.vcf.gz"
@@ -23,11 +25,12 @@ process make_vcf {
 	bam = meta.sample_id + "." + params.out_format
 	bai = bam + "." + params.out_index
 	outdir = meta.sample_id + "_results"
-
 	dragen_start = meta.sample_id + ".dragen_log.vcf.start.log"
 	dragen_end = meta.sample_id + ".dragen_log.vcf.end.log"
 			
 	def options = ""
+	def post = ""
+
 	if (params.ml_dir) {
                 options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true ")
         }
@@ -63,6 +66,7 @@ process make_vcf {
         }
 	if (params.sv) {
         	options = options.concat("--enable-sv true ")
+		post = "manta2alissa.pl -i ${outdir}/${meta.sample_id}.sv.vcf.gz -o ${outdir}/${meta.sample_id}.sv2alissa.vcf"
         }
                   
         """
@@ -93,6 +97,8 @@ process make_vcf {
 			mv $outdir/$bai $bai
 			mv $outdir/*filtered.vcf.gz $vcf
 			mv $outdir/*filtered.vcf.gz.tbi $vcf_tbi
+
+		$post
 
 		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
 	"""

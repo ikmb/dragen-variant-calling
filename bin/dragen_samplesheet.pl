@@ -52,7 +52,7 @@ foreach my $group (keys %groups) {
 	my $base_name = (split "/", $left)[-1];
 	#my $sample = (split /_S[0-9]*_/, $base_name)[0] ;
 	#my $library = (split /_L0[0-4]_/, $sample)[0] ;
-	my $sample = (split /_/, $base_name)[1] ;
+	my $sample = (split /_L0.*_/, $base_name)[0] ;
 
 	chomp($sample);
 

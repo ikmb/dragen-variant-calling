@@ -3,6 +3,8 @@
 
 // Process FastQ files into gVCF and BAM/CRAM
 process make_gvcf {
+
+	tag "${meta.patient_id}|${meta.sample_id}"
 		
 	label 'dragen'
 
@@ -21,6 +23,8 @@ process make_gvcf {
 	tuple path(dragen_start),path(dragen_end), emit: log
 	path("${outdir}/*.csv"), emit: qc
 	path("${outdir}/${meta.sample_id}.target.counts.gc-corrected.gz"), optional: true, emit: targets
+        tuple val(meta),path("${outdir}/*.sv.vcf.gz"), optional: true, emit: sv
+        tuple val(meta),path("${outdir}/*.cnv.vcf.gz"), optional: true, emit: cnv
 
 	script:
 	gvcf = meta.sample_id + ".gvcf.gz"
@@ -31,6 +35,7 @@ process make_gvcf {
 	dragen_end = meta.sample_id + "dragen_log.gvcf.end.log"
 
 	def options = ""
+	def post = ""
 	if (params.ml_dir) {
 		options = options.concat(" --vc-ml-dir=${params.ml_dir} --vc-ml-enable-recalibration=true ")
 	}
@@ -66,6 +71,7 @@ process make_gvcf {
 	}
 	if (params.sv) {
 		options = options.concat("--enable-sv true ")
+		post = "manta2alissa.pl -i ${outdir}/${meta.sample_id}.sv.vcf.gz -o ${outdir}/${meta.sample_id}.sv2alissa.vcf"
 	}
 	"""
 
@@ -90,6 +96,8 @@ process make_gvcf {
 		--output-directory $outdir \
 		--output-file-prefix ${meta.sample_id} \
 		--output-format $params.out_format $options
+
+	$post 
 
 	/opt/edico/bin/dragen_lic -f genome &> $dragen_end
 

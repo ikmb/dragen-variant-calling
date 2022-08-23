@@ -1,3 +1,25 @@
+process stage_vcf {
+
+	label 'default'
+
+	publishDir "${outdir}", mode: 'copy'
+
+	input:
+	tuple val(meta),path(vcf)
+	val(outdir)
+
+	output:
+	tuple val(meta),path(vcf),path(tbi), emit: vcf
+
+	script:
+	tbi = vcf + ".tbi"
+	
+	"""
+		tabix $vcf
+	"""
+
+}
+
 process vcf_split_seq {
 
 	label 'default'

@@ -1,7 +1,7 @@
 include { make_gvcf  } from './../../modules/dragen/make_gvcf'
 include { joint_call } from './../../modules/dragen/joint_call'
-include { vcf_add_header ; vcf_index ; vcf_by_sample } from "./../../modules/vcf/main.nf"
-
+include { stage_vcf; vcf_compress; vcf_add_header ; vcf_index ; vcf_by_sample } from "./../../modules/vcf/main.nf"
+include { MANTA2ALISSA } from "./../../modules/helper/manta"
 // joint calling with multiple samples
 workflow DRAGEN_JOINT_CALLING {
 
@@ -11,6 +11,7 @@ workflow DRAGEN_JOINT_CALLING {
 		samplesheet
 
 	main:
+		sv_vcfs = Channel.from([])
 		make_gvcf(reads.map { m,l,r ->
                                 def new_meta =  [:]
                                 new_meta.patient_id = m.patient_id
@@ -20,8 +21,15 @@ workflow DRAGEN_JOINT_CALLING {
 			bed.collect(),
 			samplesheet.collect()
 		)
+		if (params.sv) {
+			MANTA2ALISSA(make_gvcf.out.sv)
+			vcf_compress(MANTA2ALISSA.out.vcf,"${params.outdir}/ALISSA")
+		}
+		if (params.cnv) {
+			stage_vcf(make_gvcf.out.cnv,"${params.outdir}/ALISSA")
+		}
 		joint_call(
-			make_gvcf.out.map { m,g -> 
+			make_gvcf.out.gvcf.map { m,g -> 
 				def new_meta = [:]
 				new_meta.patient_id = "JointCalling"
 				new_meta.sample_id = "Dragen-JC"
