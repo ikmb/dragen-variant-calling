@@ -7,7 +7,6 @@ channels:
   - defaults
 dependencies:
   - picard=2.18.11
-  - multiqc=1.12
   - samtools=1.13
   - bcftools=1.13
   - htslib=1.13
