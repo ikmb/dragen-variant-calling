@@ -3,7 +3,7 @@ process trio_call {
 
 	label 'dragen'
 
-	publishDir "${params.outdir}/TrioCall", mode: 'copy'
+	publishDir "${params.outdir}/TrioCalling", mode: 'copy'
 
 	input:
 	tuple val(meta),path(gvcfs)

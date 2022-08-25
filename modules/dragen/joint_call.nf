@@ -2,7 +2,7 @@ process joint_call {
 
 	label 'dragen'
 
-       	publishDir "${params.outdir}/JointCall", mode: 'copy'
+       	publishDir "${params.outdir}/JointCalling", mode: 'copy'
 
 	input:
 	tuple val(meta),path(gvcfs) 

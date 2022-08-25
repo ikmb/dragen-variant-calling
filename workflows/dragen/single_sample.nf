@@ -26,7 +26,7 @@ workflow DRAGEN_SINGLE_SAMPLE {
 			stage_vcf(make_vcf.out.cnv,"${params.outdir}/ALISSA")
 		}			
 		vcf_index(make_vcf.out.vcf)
-		vcf_add_header(vcf_index.out)
+		vcf_add_header(vcf_index.out.vcf)
 	emit:
 		vcf = vcf_add_header.out.vcf
 		bam = make_vcf.out.bam

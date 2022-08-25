@@ -39,7 +39,7 @@ workflow DRAGEN_JOINT_CALLING {
 		)
 		vcf_index(joint_call.out.vcf)
 		vcf_by_sample(vcf_index.out,make_gvcf.out.sample)
-		vcf_add_header(vcf_index.out)
+		vcf_add_header(vcf_index.out.vcf)
 	emit:
 		bam = make_gvcf.out.bam
 		vcf = vcf_add_header.out

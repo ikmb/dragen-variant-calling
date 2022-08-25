@@ -39,7 +39,7 @@ workflow DRAGEN_TRIO_CALLING {
 			samplesheet.collect()
 		)
 		vcf_index(trio_call.out.vcf)
-		vcf_by_sample(vcf_index.out.collect(),make_gvcf.out.sample)
+		vcf_by_sample(vcf_index.out.vcf.collect(),make_gvcf.out.sample)
 		vcf_add_header(vcf_index.out.vcf)
 	emit:
 		bam = make_gvcf.out.bam
