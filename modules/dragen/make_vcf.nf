@@ -11,7 +11,7 @@ process make_vcf {
 	path(samplesheet)
 
 	output:
-	tuple val(meta),path(vcf), emit: vcf
+	tuple val(meta),path("${outdir}/*filtered.vcf.gz"), emit: vcf
 	tuple val(meta),path(bam),path(bai), emit: bam
 	tuple val(meta),path("${outdir}/*"), emit: results
 	tuple path(dragen_start),path(dragen_end), emit: log
@@ -95,9 +95,7 @@ process make_vcf {
                 	
 			mv $outdir/$bam $bam
 			mv $outdir/$bai $bai
-			mv $outdir/*filtered.vcf.gz $vcf
-			mv $outdir/*filtered.vcf.gz.tbi $vcf_tbi
-
+	
 		$post
 
 		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
