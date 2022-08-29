@@ -66,9 +66,12 @@ For practical reasons, it can be desirable to determine the coverage of a discre
 supports the following panels:
 
 - Dilatative Kardiomyopathie [cardio_dilatative]
-- Dilatative Kardiomyopathie 2021 [cardio_dcm_2021]	
+- Dilatative Kardiomyopathie 2021 [cardio_dcm_2021]
+- Dilatative Kardiomyopathie 2022 [cardio_hcm_2022]
 - Hypertrophe Kardiomyopathie [cardio_hypertrophic]
 - Hypertrophe Kardiomyopathie 2021 [cardio_hcm_2021]
+- Hypertrophe Kardiomyopathie 2022 [cardio_hcm_2022]
+- Arrhythmogene rechtsventrikuläre Kardiomyopathie 2022 [cardio_arvc_2022]
 - Non-Compaction Kardiomyopathie [cardio_non_compaction]
 - Pulmonale Hypertonie 2021 [cardio_pah_2021]
 - Gene Immundefekt Agammaglobulinämie (25kb panel) [IMM_AGG]
