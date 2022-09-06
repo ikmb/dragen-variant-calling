@@ -36,11 +36,14 @@ process make_gvcf {
 
 	def options = ""
 	def post = ""
+	def mv_options = ""
+
 	if (params.ml_dir) {
 		options = options.concat(" --vc-ml-dir=${params.ml_dir} --vc-ml-enable-recalibration=true ")
 	}
 	if (params.exome) {
 		options = options.concat("--vc-target-bed $bed ")
+		mv_options = "mkdir -p $outdir/wgs && mv $outdir/*wgs*.csv $outdir/wgs"
 		if (params.cnv) {
 			options = options.concat("--cnv-target-bed $bed ")
 			if (params.cnv_panel) {
@@ -97,6 +100,7 @@ process make_gvcf {
 		--output-file-prefix ${meta.sample_id} \
 		--output-format $params.out_format $options
 
+	$mv_options
 	$post 
 
 	/opt/edico/bin/dragen_lic -f genome &> $dragen_end

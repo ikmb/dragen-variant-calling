@@ -22,6 +22,8 @@ process multiqc {
 
 process multiqc_panel {
 
+	tag "${panel_name}"
+
 	label 'multiqc'
 
         publishDir "${params.outdir}/Summary/Panel", mode: "copy"

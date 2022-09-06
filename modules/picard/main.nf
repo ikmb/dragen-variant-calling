@@ -2,6 +2,8 @@ process PANEL_COVERAGE {
 
 	label 'default'
 
+	tag "${meta.sample_id}|${panel_name}"
+
         publishDir "${params.outdir}/Summary/Panel/PanelCoverage", mode: "copy"
 
         input:

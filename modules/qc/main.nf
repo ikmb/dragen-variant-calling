@@ -2,6 +2,8 @@ process validate_samplesheet {
 
 	label 'default'
 
+	tag "${csv}"
+
 	input:
 	path(csv)
 
@@ -22,6 +24,8 @@ process validate_samplesheet {
 }
 
 process target_metrics {
+
+	tag "${meta.sample_id}"
 
 	label 'default'
 
@@ -54,6 +58,8 @@ process target_metrics {
 }
 
 process wgs_metrics {
+
+	tag "${meta.sample_id}"
 
 	label 'mosdepth'
 
