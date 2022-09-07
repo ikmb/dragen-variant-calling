@@ -10,9 +10,10 @@ workflow PANEL_QC {
 
 	main:
 		PANEL_COVERAGE(bam.combine(panels),targets.collect())
-		multiqc_panel(PANEL_COVERAGE.out.coverage)
+		multiqc_panel(
+			PANEL_COVERAGE.out.coverage.groupTuple()
+		)
 	
-
 	emit:
 		qc = multiqc_panel.out.report
 

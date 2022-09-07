@@ -8,6 +8,7 @@ extra_fn_clean_exts:
     - _R1
     - _R2
     - _duplicate_metrics.txt
+    - ".hard-filtered.vcf.gz"
 
 report_comment: >
     This report has been generated automatically by the IKMB DRAGEN pipeline.

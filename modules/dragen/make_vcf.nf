@@ -20,13 +20,14 @@ process make_vcf {
 	tuple val(meta),path("${outdir}/*.cnv.vcf.gz"), optional: true, emit: cnv
 
 	script:
-	vcf = meta.sample_id + ".hard-filtered.vcf.gz"
+	def prefix = meta.sample_id
+	vcf = prefix + ".hard-filtered.vcf.gz"
 	vcf_tbi = vcf + ".tbi"
-	bam = meta.sample_id + "." + params.out_format
+	bam = prefix + "." + params.out_format
 	bai = bam + "." + params.out_index
-	outdir = meta.sample_id + "_results"
-	dragen_start = meta.sample_id + ".dragen_log.vcf.start.log"
-	dragen_end = meta.sample_id + ".dragen_log.vcf.end.log"
+	outdir = prefix + "_results"
+	dragen_start = prefix + ".dragen_log.vcf.start.log"
+	dragen_end = prefix + ".dragen_log.vcf.end.log"
 			
 	def options = ""
 	def post = ""
@@ -92,7 +93,7 @@ process make_vcf {
 			${options} \
                         --intermediate-results-dir ${params.dragen_tmp} \
                         --output-directory $outdir \
-                        --output-file-prefix ${meta.sample_id} \
+                        --output-file-prefix ${prefix} \
                         --output-format $params.out_format
                 	
 			mv $outdir/$bam $bam

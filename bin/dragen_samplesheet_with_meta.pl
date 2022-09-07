@@ -95,7 +95,7 @@ foreach my $group (keys %groups) {
 
 	my $base_name = (split "/", $left)[-1];
 	#my $sample = (split /_S[0-9]*_/, $base_name)[0] ;
-	#my $library = (split /_L0[0-4]_/, $sample)[0] ;
+	my $library = (split /_L00/, $base_name)[0] ;
 	my $sample = (split /_/, $base_name)[1] ;
 
 	chomp($sample);
@@ -109,6 +109,10 @@ foreach my $group (keys %groups) {
 	printf STDERR $sample . "\n";
 	my $this_fam = 0;
 
+	my $prefix = $sample;
+	unless ($folder =~ /.*Nagel.*/) {
+		$prefix = "${sample}_${external_name}";
+	}
 	if (exists($samples{$sample})) {
 		$this_fam = $samples{$sample};
 	} else {
@@ -123,7 +127,7 @@ foreach my $group (keys %groups) {
 	my ($instrument,$run_id,$flowcell_id,$lane,$tile,$x,$y) = (split ":", $info);
 	my $readgroup = $flowcell_id . "." . $lane . "." . $sample ;
 	chomp($readgroup);	
-	printf "FAM" . $this_fam . "," . $external_name . "," . $readgroup . "," . $external_name . "," . $sample . "," . $lane . "," . $left . "," . $right . ",0,0,other,0\n";
+	printf "FAM" . $this_fam . "," . $external_name . "," . $readgroup . "," . $prefix . "," . $library . "," . $lane . "," . $left . "," . $right . ",0,0,other,0\n";
 
 }
 
