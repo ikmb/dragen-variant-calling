@@ -29,7 +29,7 @@ process dragen_usage {
 	yaml = "dragen_usage_mqc.yaml"
 
 	"""
-		dragen_usage.pl > $yaml
+		dragen_usage.pl -u $params.dragen_unit_cost > $yaml
 	"""
 
 }

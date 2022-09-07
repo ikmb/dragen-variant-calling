@@ -5,10 +5,10 @@ custom_logo_title: "Insitute of Clinical Molecular Biology, Kiel"
 custom_logo_url: "http://www.ikmb.uni-kiel.de"
 
 extra_fn_clean_exts:
+    - ".hard-filtered"
     - _R1
     - _R2
     - _duplicate_metrics.txt
-    - ".hard-filtered.vcf.gz"
 
 report_comment: >
     This report has been generated automatically by the IKMB DRAGEN pipeline.
@@ -20,6 +20,7 @@ report_header_info:
 
 top_modules:
     - 'general_stats'
+    - 'dragen_usage'
     - 'picard'
     - 'picard_hsmetrics'
     - 'bcftools'

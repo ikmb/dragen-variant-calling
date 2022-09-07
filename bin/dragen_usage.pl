@@ -18,11 +18,13 @@ perl my_script.pl
 my $outfile = undef;
 my $before = undef;
 my $after = undef;
+my $unit = 0.3;
 my $help;
 
 GetOptions(
     "before=s" => \$before,
     "after=s" => \$after,
+    "unit=f" => \$unit,
     "help" => \$help,
     "outfile=s" => \$outfile);
 
@@ -74,4 +76,7 @@ my @sorted = sort { $a <=> $b } @counts;
 my $used = @sorted[-1] - @sorted[0] ;
 
 my $entry = "<dt>Gigabases consumed</dt><dd><samp>$used</samp></dd>" ;
+printf "    $entry\n";
+my $cost = ($used * $unit) ;
+$entry = "<dt>Cost in Euro ($unit / GB)</dt><dd><samp>$cost</samp></dd>" ;
 printf "    $entry\n";

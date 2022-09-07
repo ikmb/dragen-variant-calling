@@ -15,7 +15,7 @@ process multiqc {
     """
     cp $params.logo .
     cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
-    multiqc -n  ${params.run_name}_multiqc *
+    multiqc -c multiqc_config.yaml -n  ${params.run_name}_multiqc *
 
     """
 }
@@ -39,7 +39,7 @@ process multiqc_panel {
         """
                 cp $params.logo .
                 cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
-                multiqc -n ${panel_name}_multiqc *
+                multiqc -c multiqc_config.yaml -n ${panel_name}_multiqc *
         """
 }
 

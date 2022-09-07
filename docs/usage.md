@@ -120,3 +120,8 @@ Enable structural variant calling. This is only recommended for WGS data.
 
 ### `--ml` [ true (default) | false ]
 Use ML filter instead of built-in hard filtering only. Only available for hg38. 
+
+## Expert options
+
+### `--dragen_unit_cost` [ 0.3 ]
+The price for processing of 1Gb of data on the Dragen system in Euros. This is derived from the cost for buying a given processing capacity. 
