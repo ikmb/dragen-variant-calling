@@ -54,7 +54,7 @@ process vep2alissa {
 	tuple val(meta),path(alissa_vcf), emit: vcf
 
 	script:
-	alissa_vcf = vcf.getBaseName() + ".alissa2vep.vcf"
+	alissa_vcf = meta.sample_id + ".alissa2vep.vcf"
 
 	"""
 		vep2alissa.pl --infile $vcf > $alissa_vcf

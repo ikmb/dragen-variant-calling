@@ -18,7 +18,7 @@ If you are only interested in single VCFs per sample, you can leave the columns 
 
 #### Joint calling
 
-Joint calling for cohorts produces one VCF file for the entire data set. To enable this, use the `--joint_calling` flag.
+Joint calling for cohorts produces one VCF file for the entire data set. To enable this, use the `--joint_calling` flag. This is "true" by default. 
 
 #### Trio analysis
 
