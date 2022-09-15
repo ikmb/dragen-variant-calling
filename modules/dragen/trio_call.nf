@@ -1,5 +1,5 @@
 // Take single gVCFs and call trio analysis
-process trio_call {
+process TRIO_CALL {
 
 	label 'dragen'
 

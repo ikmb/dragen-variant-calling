@@ -41,6 +41,7 @@ if (params.help){
     exit 0
 }
 
+// Set pipeline wide options
 def summary = [:]
 
 if (!params.run_name) {
@@ -64,7 +65,6 @@ if (params.exome && params.clingen) {
 }
 
 params.assembly = "hg38"
-params.chromosomes = [ "chr1", "chr2", "chr3", "chr4", "chr5", "chr6", "chr7", "chr8", "chr9", "chr10", "chr11", "chr12", "chr13", "chr14", "chr15", "chr16", "chr17", "chr18", "chr19", "chr20", "chr21", "chr22", "chrX", "chrY", "chrM" ]
 
 if (params.assembly == "hg19") {
 	params.vep_assembly = "GRCh37"
@@ -76,6 +76,8 @@ params.dragen_ref_dir = params.genomes[params.assembly].dragenidx
 params.ref = params.genomes[params.assembly].fasta
 params.dbsnp = params.genomes[params.assembly].dbsnp
 
+multiqc_config = Channel.fromPath(file("${baseDir}/conf/multiqc_config.yaml", checkIfExists: true))
+
 // Apply ML filter on final call set, if defined
 if (params.genomes[params.assembly].ml_dir && params.ml) {
 	params.ml_dir = params.genomes[params.assembly].ml_dir
@@ -84,6 +86,8 @@ if (params.genomes[params.assembly].ml_dir && params.ml) {
 }
 
 panels = Channel.empty()
+
+id_check_bed = Channel.fromPath(file(params.genomes[ params.assembly ].qc_bed, checkIfExists: true))
 
 // Mode-dependent settings
 if (params.exome) {
@@ -151,20 +155,22 @@ if (params.expansion_hunter) {
 	params.expansion_json = null
 }
  
-// import workflows
+// import workflows and modules
 include { EXOME_QC ; WGS_QC  } from "./workflows/qc/main.nf"
 include { DRAGEN_SINGLE_SAMPLE } from "./workflows/dragen/single_sample"
 include { DRAGEN_TRIO_CALLING } from "./workflows/dragen/trio_calling"
 include { DRAGEN_JOINT_CALLING } from "./workflows/dragen/joint_calling"
 include { WHATSHAP } from "./modules/whatshap"
 include { VEP } from "./workflows/vep/main.nf"
-include { intervals_to_bed } from "./modules/intervals/main.nf"
-include { vcf_stats } from "./modules/vcf/main.nf"
-include { validate_samplesheet } from "./modules/qc/main.nf"
-include { multiqc } from "./modules/multiqc/main.nf"
-include { dragen_usage } from "./modules/logging/main.nf"
-include { SOFTWARE_VERSIONS } from "./workflows/versions/main.nf"
+include { INTERVALS_TO_BED } from "./modules/intervals/main.nf"
+include { VCF_STATS } from "./modules/vcf/main.nf"
+include { VALIDATE_SAMPLESHEET } from "./modules/qc/main.nf"
+include { MULTIQC; MULTIQC_FASTQC } from "./modules/multiqc/main.nf"
+include { DRAGEN_USAGE } from "./modules/logging/main.nf"
+include { VERSIONS } from "./workflows/versions/main.nf"
 include { PANEL_QC } from "./workflows/panels/main.nf"
+include { ID_CHECK } from "./workflows/id_check"
+include { FASTQC } from "./modules/fastqc"
   
 // Input channels
 Channel.fromPath( file(params.ref) )
@@ -215,21 +221,27 @@ workflow {
 
 	main:
 
-	SOFTWARE_VERSIONS()
-	versions = SOFTWARE_VERSIONS.out.yaml
+	VERSIONS()
+	versions = VERSIONS.out.yaml
 
 	// rudementary check of samplesheet validity before we run Dragen	
-	validate_samplesheet(Samplesheet)
-	samples = validate_samplesheet.out
+	VALIDATE_SAMPLESHEET(Samplesheet)
+	samples = VALIDATE_SAMPLESHEET.out
 	ch_qc = Channel.from([])
 
 	if (params.exome) {
-		intervals_to_bed(Targets)
-		BedIntervals = intervals_to_bed.out
+		INTERVALS_TO_BED(Targets)
+		BedIntervals = INTERVALS_TO_BED.out
 	} else {
 		BedIntervals = BedFile
 	}
 
+	// Read QC; can remove when multiqc offers native support for Dragen FastQC metrics
+	FASTQC(
+		Reads
+	)
+
+	// Dragen processing modes
 	if (params.joint_calling) {
 		DRAGEN_JOINT_CALLING(Reads,BedIntervals,samples)
 		vcf = DRAGEN_JOINT_CALLING.out.vcf
@@ -253,32 +265,58 @@ workflow {
 		ch_qc = ch_qc.mix(DRAGEN_SINGLE_SAMPLE.out.qc)
 	}
 
+	// Effect prediction for the primary VCF(s)
 	if (params.vep) {
  	       VEP(vcf)
 	}
 
+	// Perform phasing of primary VCF(s)
 	if (params.phase) {
 		WHATSHAP(
 			vcf_sample.join(bam)
 		)
 	}
 
+	// Analysis-specific metrics (WGS or exome)
 	if (params.exome) {	
 		EXOME_QC(bam,Targets,Baits)
 		coverage = EXOME_QC.out.cov_report
 		PANEL_QC(bam,panels,Targets)
+		ch_qc = ch_qc.mix(coverage)
 	} else {
 		WGS_QC(bam,BedIntervals)
 		coverage = WGS_QC.out.cov_report
+		ch_qc = ch_qc.mix(coverage)
 	} 
 
-	vcf_stats(vcf_sample)
-	
-	dragen_usage(dragen_logs.collect())
+	if (params.check) {
+		ID_CHECK(bam,id_check_bed)
+		check_vcf = ID_CHECK.out.vcf
+	}
 
-	multiqc(vcf_stats.out.concat(coverage,versions,dragen_usage.out,ch_qc).collect())	
+	// Statistics for primary VCF(s)
+	VCF_STATS(vcf_sample)
+
+	ch_qc = ch_qc.mix(VCF_STATS.out.stats)
+
+	// How many bases have been processed (for accounting)
+	DRAGEN_USAGE(dragen_logs.collect())
+
+	ch_qc = ch_qc.mix(DRAGEN_USAGE.out.yaml)
+
+	// Primary QC report
+	MULTIQC(
+		ch_qc.collect(),
+		multiqc_config.collect()
+	)
+	// Read qc (until Multiqc can process FastQC from Dragen	
+	MULTIQC_FASTQC(
+		FASTQC.out.zip.map {m,z -> z }.collect(),
+		multiqc_config.collect()
+	)
 }
 
+// Turn input meta data into a hash object and file paths
 def create_fastq_channel(LinkedHashMap row) {
 
     // famID,indivID,RGID,RGSM,RGLB,Lane,Read1File,Read2File,PaternalID,MaternalID,Sex,Phenotype

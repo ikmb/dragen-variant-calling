@@ -1,4 +1,4 @@
-process vep {
+process VEP_ANNOTATE {
 
 	label 'vep'
 
@@ -45,7 +45,7 @@ process vep {
         """
 }
 
-process vep2alissa {
+process VEP2ALISSA {
 
 	input:
 	tuple val(meta),path(vcf)
@@ -60,3 +60,4 @@ process vep2alissa {
 		vep2alissa.pl --infile $vcf > $alissa_vcf
 	"""
 }
+

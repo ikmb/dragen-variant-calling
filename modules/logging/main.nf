@@ -1,4 +1,4 @@
-process dragen_version {
+process DRAGEN_VERSION {
 
 	publishDir "${params.outdir}/DragenLogs/", mode: 'copy'
 
@@ -15,7 +15,7 @@ process dragen_version {
 	"""
 }
 
-process dragen_usage {
+process DRAGEN_USAGE {
 
 	publishDir "${params.outdir}/DragenLogs/", mode: 'copy'
 
@@ -23,7 +23,7 @@ process dragen_usage {
 	path(logs)
 
 	output:
-	path(yaml)
+	path(yaml), emit: yaml
 
 	script:
 	yaml = "dragen_usage_mqc.yaml"
@@ -34,7 +34,7 @@ process dragen_usage {
 
 }
 
-process software_versions {
+process SOFTWARE_VERSIONS {
 
 	publishDir "${params.outdir}/Summary/versions", mode: 'copy'
 

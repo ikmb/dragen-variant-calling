@@ -1,6 +1,6 @@
-include { make_gvcf  } from './../../modules/dragen/make_gvcf'
-include { joint_call } from './../../modules/dragen/joint_call'
-include { stage_vcf; vcf_compress; vcf_add_header ; vcf_index ; vcf_by_sample } from "./../../modules/vcf/main.nf"
+include { MAKE_GVCF } from './../../modules/dragen/make_gvcf'
+include { JOINT_CALL } from './../../modules/dragen/joint_call'
+include { STAGE_VCF; VCF_COMPRESS; VCF_ADD_HEADER ; VCF_INDEX ; VCF_BY_SAMPLE } from "./../../modules/vcf/main.nf"
 include { MANTA2ALISSA } from "./../../modules/helper/manta"
 // joint calling with multiple samples
 workflow DRAGEN_JOINT_CALLING {
@@ -12,7 +12,7 @@ workflow DRAGEN_JOINT_CALLING {
 
 	main:
 		sv_vcfs = Channel.from([])
-		make_gvcf(reads.map { m,l,r ->
+		MAKE_GVCF(reads.map { m,l,r ->
                                 def new_meta =  [:]
                                 new_meta.patient_id = m.patient_id
                                 new_meta.sample_id = m.sample_id
@@ -21,15 +21,18 @@ workflow DRAGEN_JOINT_CALLING {
 			bed.collect(),
 			samplesheet.collect()
 		)
-		if (params.sv) {
-			MANTA2ALISSA(make_gvcf.out.sv)
-			vcf_compress(MANTA2ALISSA.out.vcf,"${params.outdir}/ALISSA")
-		}
-		if (params.cnv) {
-			stage_vcf(make_gvcf.out.cnv,"${params.outdir}/ALISSA")
-		}
-		joint_call(
-			make_gvcf.out.gvcf.map { m,g -> 
+		ch_secondary = Channel.from([])
+
+                if (params.sv) {
+                        ch_secondary = ch_secondary.mix(MAKE_GVCF.out.sv)
+                }
+                if (params.cnv) {
+                        ch_secondary = ch_secondary.mix(MAKE_GVCF.out.cnv)
+                }
+                STAGE_VCF(ch_secondary,"${params.outdir}/ALISSA")
+
+		JOINT_CALL(
+			MAKE_GVCF.out.gvcf.map { m,g -> 
 				def new_meta = [:]
 				new_meta.patient_id = "JointCalling"
 				new_meta.sample_id = "Dragen-JC"
@@ -37,13 +40,13 @@ workflow DRAGEN_JOINT_CALLING {
 			}.groupTuple(),
 			bed.collect()
 		)
-		vcf_index(joint_call.out.vcf)
-		vcf_by_sample(vcf_index.out,make_gvcf.out.sample)
-		vcf_add_header(vcf_index.out.vcf)
+		VCF_INDEX(JOINT_CALL.out.vcf)
+		VCF_BY_SAMPLE(VCF_INDEX.out.vcf.collect(),MAKE_GVCF.out.sample)
+		VCF_ADD_HEADER(VCF_INDEX.out.vcf)
 	emit:
-		bam = make_gvcf.out.bam
-		vcf = vcf_add_header.out
-		vcf_sample = vcf_by_sample.out
-		dragen_logs = make_gvcf.out.log.concat(joint_call.out.log)
-		qc = make_gvcf.out.qc
+		bam = MAKE_GVCF.out.bam
+		vcf = VCF_ADD_HEADER.out.vcf
+		vcf_sample = VCF_BY_SAMPLE.out
+		dragen_logs = MAKE_GVCF.out.log.concat(JOINT_CALL.out.log)
+		qc = MAKE_GVCF.out.qc
 }

@@ -1,4 +1,4 @@
-process joint_call {
+process JOINT_CALL {
 
 	label 'dragen'
 

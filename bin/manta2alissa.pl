@@ -51,7 +51,13 @@ while (<$IN>) {
 		my @values = split(/\t/,$line);
                 my ($chrom,$pos,$rsid,$ref,$alt,$qual,$filter,$info,$format) = @values[0..8];
 		my @info = split( ";",$info);
-		my $patients = join(@values[9..-1], "\t");
+
+		my $patients = "";
+		if (scalar @values == 10) {
+			$patients = @values[9];
+		} else {
+			$patients = join(@values[9..-1], "\t");
+		}
 
 		my $update = "";
 

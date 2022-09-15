@@ -1,11 +1,36 @@
-process stage_vcf {
+process VCF_ANNOTATE {
+
+	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/Annotated", mode: 'copy'
+
+	label 'default'
+
+	tag "${meta.sample_id}"
+
+	input:
+	tuple val(meta),path(vcf),path(tbi)
+
+	output:
+	tuple val(meta),path(vcf_a),path(tbi_a), emit: vcf
+
+	script:
+	vcf_a = vcf.getSimpleName() + ".annotated.vcf.gz"
+	tbi_a = vcf_a + ".tbi"
+
+	"""
+		bcftools annotate -a $params.dbsnp -c ID -o $vcf_a $vcf
+		bcftools index -t $vcf_a 
+	"""
+
+} 
+
+process STAGE_VCF {
 
 	label 'default'
 
 	publishDir "${outdir}", mode: 'copy'
 
 	input:
-	tuple val(meta),path(vcf)
+	tuple val(meta),path(vcf),path(tbi)
 	val(outdir)
 
 	output:
@@ -15,12 +40,12 @@ process stage_vcf {
 	tbi = vcf + ".tbi"
 	
 	"""
-		tabix $vcf
+		touch dummy.txt
 	"""
 
 }
 
-process vcf_split_seq {
+process VCF_SPLIT_SEQ {
 
 	label 'default'
 
@@ -40,7 +65,7 @@ process vcf_split_seq {
 	"""
 }
 
-process vcf_index {
+process VCF_INDEX {
 
 	label 'default'
 
@@ -59,7 +84,7 @@ process vcf_index {
 
 }
 
-process vcf_stats {
+process VCF_STATS {
 
 	label 'default'
 
@@ -69,7 +94,7 @@ process vcf_stats {
         tuple val(meta),path(vcf),path(tbi)
 
         output:
-        path(vstats)
+        path(vstats), emit: stats
 
         script:
         vstats = vcf.getBaseName() + ".stats"
@@ -79,7 +104,7 @@ process vcf_stats {
         """
 }
 
-process vcf_by_sample {
+process VCF_BY_SAMPLE {
 
 	label 'gatk'
 
@@ -104,7 +129,7 @@ process vcf_by_sample {
 
 }
 
-process vcf_add_header {
+process VCF_ADD_HEADER {
 
 	label 'default'
 
@@ -129,7 +154,7 @@ process vcf_add_header {
 
 }
 
-process vcf_compress {
+process VCF_COMPRESS {
 
 	label 'default'
 

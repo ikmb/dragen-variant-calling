@@ -5,10 +5,16 @@ custom_logo_title: "Insitute of Clinical Molecular Biology, Kiel"
 custom_logo_url: "http://www.ikmb.uni-kiel.de"
 
 extra_fn_clean_exts:
-    - ".hard-filtered"
-    - _R1
-    - _R2
-    - _duplicate_metrics.txt
+    - type: regex
+      pattern: "_S[0-9]+_L00.*"
+    - type: truncate
+      pattern: ".hard-filtered"
+    - type: truncate
+      pattern: "_R1"
+    - type: truncate
+      pattern : "_R2"
+    - type: truncate
+      pattern: "_duplicate_metrics.txt"
 
 report_comment: >
     This report has been generated automatically by the IKMB DRAGEN pipeline.
@@ -16,7 +22,7 @@ report_comment: >
 
 report_header_info:
     - Contact E-mail: "b.loescher@ikmb.uni-kiel.de"
-    - Application Type: "Variant calling"
+    - Application Type: "Clinical variant calling"
 
 top_modules:
     - 'general_stats'

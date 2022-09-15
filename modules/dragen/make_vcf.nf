@@ -1,5 +1,5 @@
 // end-to-end single sample variant calling
-process make_vcf {
+process MAKE_VCF {
 
 	label 'dragen'
 
@@ -16,13 +16,17 @@ process make_vcf {
 	tuple val(meta),path("${outdir}/*"), emit: results
 	tuple path(dragen_start),path(dragen_end), emit: log
         path("${outdir}/*.csv"), emit: qc
-	tuple val(meta),path("${outdir}/*.sv.vcf.gz"), optional: true, emit: sv
-	tuple val(meta),path("${outdir}/*.cnv.vcf.gz"), optional: true, emit: cnv
+	tuple val(meta),path("${outdir}/${sv}"),path("${outdir}/${sv_tbi}"), optional: true, emit: sv
+	tuple val(meta),path("${outdir}/${cnv}"),path("${outdir}/${cnv_tbi}"), optional: true, emit: cnv
 
 	script:
 	def prefix = meta.sample_id
 	vcf = prefix + ".hard-filtered.vcf.gz"
 	vcf_tbi = vcf + ".tbi"
+	sv = prefix + ".sv.vcf.gz"
+	sv_tbi = sv + ".tbi"
+	cnv = prefix + ".cnv.vcf.gz"
+	cnv_tbi = cnv + ".tbi"
 	bam = prefix + "." + params.out_format
 	bai = bam + "." + params.out_index
 	outdir = prefix + "_results"

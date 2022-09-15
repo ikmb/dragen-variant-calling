@@ -1,4 +1,4 @@
-process intervals_to_bed {
+process INTERVALS_TO_BED {
 
 	executor 'local'
 	label 'default'

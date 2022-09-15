@@ -52,6 +52,8 @@ FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,/work_ifs/sukmb352/pr
 
 If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lane libaries. The samplesheet generator script should take care of this, usually. 
 
+Please note that the names of the final files will use the value you have entered for `RGSM` (sample ID) as their root name. The folder structure users the pattern `indivID/RGSM/RGSM_results`. 
+
 ### `--assembly` [ hg38 (default), hg19 ] 
 The mapping reference to be used by Dragen. We have two ALT aware versions available - hg38 with haplotypes and decoys (hg38HD) as well as hg19 (came with Dragen). 
 
@@ -123,5 +125,5 @@ Use ML filter instead of built-in hard filtering only. Only available for hg38.
 
 ## Expert options
 
-### `--dragen_unit_cost` [ 0.3 ]
+### `--dragen_unit_cost` [ 0.13 ]
 The price for processing of 1Gb of data on the Dragen system in Euros. This is derived from the cost for buying a given processing capacity. 

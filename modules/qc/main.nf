@@ -1,4 +1,4 @@
-process validate_samplesheet {
+process VALIDATE_SAMPLESHEET {
 
 	label 'default'
 
@@ -23,7 +23,7 @@ process validate_samplesheet {
 	"""
 }
 
-process target_metrics {
+process TARGET_METRICS {
 
 	tag "${meta.sample_id}"
 
@@ -57,7 +57,7 @@ process target_metrics {
        	"""
 }
 
-process wgs_metrics {
+process WGS_METRICS {
 
 	tag "${meta.sample_id}"
 

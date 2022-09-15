@@ -2,7 +2,7 @@
 // Dragen variant caller
 
 // Process FastQ files into gVCF and BAM/CRAM
-process make_gvcf {
+process MAKE_GVCF {
 
 	tag "${meta.patient_id}|${meta.sample_id}"
 		
@@ -23,11 +23,15 @@ process make_gvcf {
 	tuple path(dragen_start),path(dragen_end), emit: log
 	path("${outdir}/*.csv"), emit: qc
 	path("${outdir}/${meta.sample_id}.target.counts.gc-corrected.gz"), optional: true, emit: targets
-        tuple val(meta),path("${outdir}/*.sv.vcf.gz"), optional: true, emit: sv
-        tuple val(meta),path("${outdir}/*.cnv.vcf.gz"), optional: true, emit: cnv
+        tuple val(meta),path("${outdir}/${sv}"),path("${outdir}/${sv_tbi}"), optional: true, emit: sv
+        tuple val(meta),path("${outdir}/${cnv}"),path("${outdir}/${cnv_tbi}"), optional: true, emit: cnv
 
-	script:
-	def prefix = meta.sample_id
+        script:
+        def prefix = meta.sample_id
+        sv = prefix + ".sv.vcf.gz"
+        sv_tbi = sv + ".tbi"
+        cnv = prefix + ".cnv.vcf.gz"
+        cnv_tbi = cnv + ".tbi"
 	gvcf = prefix + ".gvcf.gz"
 	align = prefix + "." + params.out_format
 	align_index = align + "." + params.out_index

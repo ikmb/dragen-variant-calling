@@ -1,5 +1,5 @@
-include { target_metrics ; wgs_metrics } from './../../modules/qc/main.nf'
-include { multiqc } from "./../../modules/multiqc/main.nf"
+include { TARGET_METRICS ; WGS_METRICS } from './../../modules/qc/main.nf'
+include { MULTIQC } from "./../../modules/multiqc/main.nf"
 
 workflow EXOME_QC {
 
@@ -9,10 +9,10 @@ workflow EXOME_QC {
 		baits
 
 	main:
-		target_metrics( bam, targets.collect(), baits.collect() )
+		TARGET_METRICS( bam, targets.collect(), baits.collect() )
 
 	emit:
-		cov_report = target_metrics.out[0]
+		cov_report = TARGET_METRICS.out[0]
 
 }
 
@@ -23,9 +23,9 @@ workflow WGS_QC {
 		bed
 
 	main:
-		wgs_metrics(bam,bed.collect())
+		WGS_METRICS(bam,bed.collect())
 
 	emit:
-		cov_report = wgs_metrics.out
+		cov_report = WGS_METRICS.out
 
 }
