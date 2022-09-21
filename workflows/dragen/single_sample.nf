@@ -21,7 +21,11 @@ workflow DRAGEN_SINGLE_SAMPLE {
 		ch_secondary = Channel.from([])
 
 		if (params.sv) {
-			ch_secondary = ch_secondary.mix(MAKE_VCF.out.sv)
+			MANTA2ALISSA(MAKE_VCF.out.sv)
+			VCF_COMPRESS(
+				MANTA2ALISSA.out.vcf,
+				"${params.outdir}/ALISSA"
+			)
 		}
 		if (params.cnv) {
 			ch_secondary = ch_secondary.mix(MAKE_VCF.out.cnv)

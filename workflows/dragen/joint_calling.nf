@@ -24,7 +24,12 @@ workflow DRAGEN_JOINT_CALLING {
 		ch_secondary = Channel.from([])
 
                 if (params.sv) {
-                        ch_secondary = ch_secondary.mix(MAKE_GVCF.out.sv)
+                        //ch_secondary = ch_secondary.mix(MAKE_GVCF.out.sv)
+			MANTA2ALISSA(MAKE_GVCF.out.sv)
+			VCF_COMPRESS(
+				MANTA2ALISSA.out.vcf,
+				"${params.outdir}/ALISSA"
+			)
                 }
                 if (params.cnv) {
                         ch_secondary = ch_secondary.mix(MAKE_GVCF.out.cnv)

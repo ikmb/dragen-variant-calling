@@ -1,9 +1,13 @@
 process MANTA2ALISSA {
 
+	container 'docker://quay.io/biocontainers/ruby-dna-tools:1.0--hdfd78af_3'
+
+	//publishDir "${params.outdir}/ALISSA", mode: 'copy'
+
 	tag "${meta.patient_id}|${meta.sample_id}"
 	
 	input:
-	tuple val(meta),path(vcf)
+	tuple val(meta),path(vcf),path(tbi)
 
 	output:
 	tuple val(meta),path(vcf_alissa), emit: vcf
@@ -13,7 +17,7 @@ process MANTA2ALISSA {
 	vcf_alissa = vcf.getSimpleName() + ".sv2alissa.vcf"
 
 	"""
-		manta2alissa.pl -i ${vcf} -o ${vcf_alissa}
+		zcat $vcf | manta2alissa.rb > ${vcf_alissa} 
 	"""
 
 }

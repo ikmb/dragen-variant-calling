@@ -79,7 +79,7 @@ process MAKE_GVCF {
 	}
 	if (params.sv) {
 		options = options.concat("--enable-sv true ")
-		post = "manta2alissa.pl -i ${outdir}/${meta.sample_id}.sv.vcf.gz -o ${outdir}/${meta.sample_id}.sv2alissa.vcf"
+		//post = "manta2alissa.pl -i ${outdir}/${meta.sample_id}.sv.vcf.gz -o ${outdir}/${meta.sample_id}.sv2alissa.vcf"
 	}
 	"""
 
