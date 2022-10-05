@@ -1,5 +1,5 @@
 ========================================
-Exome pipeline: version ${version}
+Dragen pipeline: version ${version}
 ========================================
 Run Name: $runName
 

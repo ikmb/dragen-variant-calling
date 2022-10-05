@@ -67,11 +67,7 @@ For WES samples, the enrichment kit can be specified to enable targetted analysi
 For practical reasons, it can be desirable to determine the coverage of a discrete set of target genes, such as for a gene panel. The pipeline currently
 supports the following panels:
 
-- Dilatative Kardiomyopathie [cardio_dilatative]
-- Dilatative Kardiomyopathie 2021 [cardio_dcm_2021]
 - Dilatative Kardiomyopathie 2022 [cardio_hcm_2022]
-- Hypertrophe Kardiomyopathie [cardio_hypertrophic]
-- Hypertrophe Kardiomyopathie 2021 [cardio_hcm_2021]
 - Hypertrophe Kardiomyopathie 2022 [cardio_hcm_2022]
 - Arrhythmogene rechtsventrikuläre Kardiomyopathie 2022 [cardio_arvc_2022]
 - Non-Compaction Kardiomyopathie [cardio_non_compaction]
