@@ -72,7 +72,14 @@ while (line = input_stream.gets)
 		if entry.alt == "<INS>"
 			entry.alt = "<DUP>"
 		end
-		if entry.id.include?("MantaINS") || entry.id.include?("MantaDEL") && entry.alt != "<DEL>"
+		if entry.id.include?("MantaINS")
+			info = entry.info
+			if entry.alt.match(/\<[A-Z]+\>/)
+				entry.info = info.gsub(/SVTYPE\=[A-Z]+\;/, "SVTYPE=DUP;")
+			else
+	                        entry.info = info.gsub(/SVTYPE\=[A-Z]+\;/, "")
+			end
+		elsif entry.id.include?("MantaDEL") && entry.alt != "<DEL>"
                         info = entry.info
 			entry.info = info.gsub(/SVTYPE\=[A-Z]+\;/, "")
 		end

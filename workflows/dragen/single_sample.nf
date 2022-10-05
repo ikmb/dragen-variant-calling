@@ -30,7 +30,7 @@ workflow DRAGEN_SINGLE_SAMPLE {
 		if (params.cnv) {
 			ch_secondary = ch_secondary.mix(MAKE_VCF.out.cnv)
 		}
-		stage_vcf(ch_secondary)		
+		STAGE_VCF(ch_secondary,"${params.outdir}/ALISSA")		
 	
 		VCF_INDEX(MAKE_VCF.out.vcf)
 		VCF_ADD_HEADER(VCF_INDEX.out.vcf)

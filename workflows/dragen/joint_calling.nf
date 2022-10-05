@@ -40,7 +40,7 @@ workflow DRAGEN_JOINT_CALLING {
 			MAKE_GVCF.out.gvcf.map { m,g -> 
 				def new_meta = [:]
 				new_meta.patient_id = "JointCalling"
-				new_meta.sample_id = "Dragen-JC"
+				new_meta.sample_id = "Dragen-JC_${params.run_name}"
 				tuple(new_meta,g) 
 			}.groupTuple(),
 			bed.collect()

@@ -15,6 +15,7 @@ perl my_script.pl
 };
 
 my $folder = undef;
+my $customer = undef;
 my $help;
 
 GetOptions(
@@ -49,6 +50,8 @@ $ext = "/project/pool_info/${project_id}" ;
 $response = $http->get($server.$ext, {
         headers => { 'Content-type' => 'application/json' }
 });
+
+printf STDERR Dumper($response) . "\n";
 
 my $data = decode_json($response->{content});
 my $pools = $data->{'pools'};
@@ -96,7 +99,12 @@ foreach my $group (keys %groups) {
 	my $base_name = (split "/", $left)[-1];
 	#my $sample = (split /_S[0-9]*_/, $base_name)[0] ;
 	my $library = (split /_L00/, $base_name)[0] ;
-	my $sample = (split /_/, $base_name)[1] ;
+	my $sample = undef;
+	if ($base_name =~ /^\d+.*/) {
+		$sample = (split /_/, $base_name)[1] ;
+	} else {
+		$sample = (split /_/, $base_name)[0] ;
+	}
 
 	chomp($sample);
 
@@ -110,9 +118,13 @@ foreach my $group (keys %groups) {
 	my $this_fam = 0;
 
 	my $prefix = $sample;
-	unless ($folder =~ /.*Nagel.*/) {
+
+	if ($folder =~ /.*Nagel.*/) {
 		$prefix = "${sample}_${external_name}";
+	} else {
+		$external_name = $prefix . "_" . $external_name ;
 	}
+
 	if (exists($samples{$sample})) {
 		$this_fam = $samples{$sample};
 	} else {
