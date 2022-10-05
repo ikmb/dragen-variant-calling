@@ -54,6 +54,12 @@ If your libraries were sequenced across multiple lanes, specify this via the Lan
 
 Please note that the names of the final files will use the value you have entered for `RGSM` (sample ID) as their root name. The folder structure users the pattern `indivID/RGSM/RGSM_results`. 
 
+### `--email` [ false (default) | me@somewhere.org ]
+Have the pipeline send a report upon completion to this email adress. 
+
+### `--sender` [ false (default) | me@somewhere.org ]
+The Email adress from which reports are sent. For the IKMB DX Cluster, this is automatically set to `no-reply@ikmb.uni-kiel.de`.
+
 ### `--assembly` [ hg38 (default), hg19 ] 
 The mapping reference to be used by Dragen. We have two ALT aware versions available - hg38 with haplotypes and decoys (hg38HD) as well as hg19 (came with Dragen). 
 
