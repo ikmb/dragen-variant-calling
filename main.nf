@@ -427,11 +427,7 @@ workflow.onComplete {
 	try {
           if( params.plaintext_email ){ throw GroovyException('Send plaintext e-mail, not HTML') }
           // Try to send HTML e-mail using sendmail
-	  if (params.sender) {
-		[ 'sendmail', '-f ${params.sender}',  '-t' ].execute() << sendmail_html
-	  } else {
-	          [ 'sendmail', '-t' ].execute() << sendmail_html
-          }
+          [ 'sendmail', '-f no-reply@ikmb.uni-kiel.de',  '-t' ].execute() << sendmail_html
         } catch (all) {
           // Catch failures and try with plaintext
           [ 'mail', '-s', subject, params.email ].execute() << email_txt
