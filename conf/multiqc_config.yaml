@@ -30,3 +30,6 @@ top_modules:
     - 'picard'
     - 'picard_hsmetrics'
     - 'bcftools'
+
+remove-sections:
+    - 'bcftools-stats-depth'

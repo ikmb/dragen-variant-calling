@@ -33,7 +33,7 @@ workflow DRAGEN_TRIO_CALLING {
                 if (params.cnv) {
                         ch_secondary = ch_secondary.mix(MAKE_GVCF.out.cnv)
                 }
-                STAGE_VCF(ch_secondary)
+                STAGE_VCF(ch_secondary,"${params.outdir}/ALISSA")
 
 		TRIO_CALL(
 			MAKE_GVCF.out.gvcf.map { m,g ->
