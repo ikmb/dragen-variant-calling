@@ -237,6 +237,8 @@ workflow {
 	samples = VALIDATE_SAMPLESHEET.out
 	ch_qc = Channel.from([])
 
+	ch_qc = ch_qc.mix(versions)
+
 	if (params.exome) {
 		INTERVALS_TO_BED(Targets)
 		BedIntervals = INTERVALS_TO_BED.out
