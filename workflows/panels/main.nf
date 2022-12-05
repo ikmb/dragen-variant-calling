@@ -1,4 +1,4 @@
-include { PANEL_COVERAGE } from "./../../modules/picard/main.nf" params(params)
+include { PANEL_REF_COVERAGE } from "./../../modules/picard/main.nf" params(params)
 include { MULTIQC_PANEL } from "./../../modules/multiqc/main.nf" params(params)
 
 workflow PANEL_QC {
@@ -9,7 +9,7 @@ workflow PANEL_QC {
 		targets
 
 	main:
-		PANEL_COVERAGE(bam.combine(panels),targets.collect())
+		PANEL_REF_COVERAGE(bam.combine(panels),targets.collect())
 		MULTIQC_PANEL(
 			PANEL_COVERAGE.out.coverage.groupTuple()
 		)
