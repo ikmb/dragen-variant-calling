@@ -7,7 +7,7 @@ process PANEL_COVERAGE {
         publishDir "${params.outdir}/Summary/Panel/PanelCoverage", mode: "copy"
 
         input:
-        tuple val(meta),file(bam),file(bai),file(panel)
+        tuple val(meta),path(bam),path(bai),path(panel)
         path(targets)
 
         output:
@@ -62,8 +62,8 @@ process PANEL_REF_COVERAGE {
         publishDir "${params.outdir}/Summary/Panel/PanelCoverage", mode: "copy"
 
         input:
-        tuple val(meta),file(bam),file(bai),file(panel)
-	tuple val(panel_name),path(targets)
+        tuple val(meta),path(bam),path(bai),val(panel_name),path(panel)
+	path(targets)
 
         output:
         tuple val(panel_name),path(coverage), emit: coverage
@@ -77,9 +77,9 @@ process PANEL_REF_COVERAGE {
 
         // optionally support a kill list of known bad exons
         def options = ""
-
+	def cov = ""
 	if (params.genomes[params.assembly].panels[panel_name].coverages) {
-		def cov = params.genomes[params.assembly].panels[targets.getSimpleName()].coverages
+		cov = file(params.genomes[params.assembly].panels[panel_name].coverages)
 		options = "--ref ${cov}"
 	}
         // do something here - get coverage and build an XLS sheet

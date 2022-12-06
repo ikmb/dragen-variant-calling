@@ -11,7 +11,7 @@ workflow PANEL_QC {
 	main:
 		PANEL_REF_COVERAGE(bam.combine(panels),targets.collect())
 		MULTIQC_PANEL(
-			PANEL_COVERAGE.out.coverage.groupTuple()
+			PANEL_REF_COVERAGE.out.coverage.groupTuple()
 		)
 	
 	emit:

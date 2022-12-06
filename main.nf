@@ -116,9 +116,9 @@ if (params.exome) {
 	if (params.panel) {
         	panel = params.genomes[params.assembly].panels[params.panel].intervals
 	        panels = Channel.fromPath(panel)
-		panels = Channel.from([ val(params.panel),file(panel)])
+		panels = Channel.from([ params.panel,file(panel)])
 	} else if (params.panel_intervals) {
-        	Channel.fromPath(params.panel_intervals)
+        	Channel.from([ "Custom",file(params.panel_intervals)])
 	        .ifEmpty { exit 1; "Could not find the specified gene panel (--panel_intervals)" }
         	.set { panels }
 	} else if (params.all_panels) {
@@ -126,7 +126,7 @@ if (params.exome) {
 	        panel_names = params.genomes[params.assembly].panels.keySet()
         	panel_names.each {
 	                interval = params.genomes[params.assembly].panels[it].intervals
-        	        panel_list << [ val(it),file(interval) ]
+        	        panel_list << [ it,file(interval) ]
 	        }
         	panels = Channel.fromList(panel_list)
 	}
