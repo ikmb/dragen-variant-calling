@@ -105,15 +105,6 @@ if (params.exome) {
                 .ifEmpty {exit 1; "Could not find the bait intervals for this exome kit..." }
                 .set { Baits }
 
-	// List of known-bad targets
-	if (params.kill) {
-        	params.kill_list = params.kill
-	} else if (params.kit && params.genomes[params.assembly].kits[params.kit].kill) {
-        	params.kill_list = params.genomes[params.assembly].kits[params.kit].kill
-	} else {
-		params.kill_list = false
-	}	
-
 	if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
        		params.cnv_panel = params.genomes[params.assembly].kits[params.kit].cnv_panel
 		cnv_panel = file(params.cnv_panel,checkIfExists: true)
@@ -125,8 +116,9 @@ if (params.exome) {
 	if (params.panel) {
         	panel = params.genomes[params.assembly].panels[params.panel].intervals
 	        panels = Channel.fromPath(panel)
+		panels = Channel.from([ params.panel,file(panel)])
 	} else if (params.panel_intervals) {
-        	Channel.fromPath(params.panel_intervals)
+        	Channel.from([ "Custom",file(params.panel_intervals)])
 	        .ifEmpty { exit 1; "Could not find the specified gene panel (--panel_intervals)" }
         	.set { panels }
 	} else if (params.all_panels) {
@@ -134,7 +126,7 @@ if (params.exome) {
 	        panel_names = params.genomes[params.assembly].panels.keySet()
         	panel_names.each {
 	                interval = params.genomes[params.assembly].panels[it].intervals
-        	        panel_list << file(interval)
+        	        panel_list << [ it,file(interval) ]
 	        }
         	panels = Channel.fromList(panel_list)
 	}
