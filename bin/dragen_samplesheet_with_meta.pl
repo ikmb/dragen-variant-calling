@@ -112,6 +112,15 @@ foreach my $group (keys %groups) {
 
 	if ($lookup{$sample}) {
 		$external_name = $lookup{$sample};
+	} else {
+		$ext = "/library/info/${sample}" ;
+		$response = $http->get($server.$ext, {
+        		headers => { 'Content-type' => 'application/json' }
+		});
+
+		my $ldata = decode_json($response->{content});
+		my $lsample = $ldata->{'data'}{'sample'} ;
+		$external_name = $lsample->{'external_name'};		
 	}
 		
 	printf STDERR $sample . "\n";
@@ -140,6 +149,6 @@ foreach my $group (keys %groups) {
 	my $readgroup = $flowcell_id . "." . $lane . "." . $sample ;
 	chomp($readgroup);	
 	printf "FAM" . $this_fam . "," . $external_name . "," . $readgroup . "," . $prefix . "," . $library . "," . $lane . "," . $left . "," . $right . ",0,0,other,0\n";
-
+	printf STDERR $sample . "\t" . $external_name . "\n";
 }
 

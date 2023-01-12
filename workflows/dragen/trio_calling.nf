@@ -15,6 +15,7 @@ workflow DRAGEN_TRIO_CALLING {
                                 def new_meta =  [:]
                                 new_meta.patient_id = m.patient_id
                                 new_meta.sample_id = m.sample_id
+				new_meta.family_id = m.family_id
                                 tuple(new_meta,l,r)
                         }.groupTuple(),
 			bed.collect(),
