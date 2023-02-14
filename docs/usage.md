@@ -66,6 +66,10 @@ Specifiy that this is an exome analysis - requires '--kit' as well.
 ### `--kit` 
 For WES samples, the enrichment kit can be specified to enable targetted analysis and QC metrics. The most likely option to use at the CCGA would be 'xGen_v2' or 'xGen_v2_cardio'. the latter contains some custom content for cardiogenetics.
 
+- xGen_v2
+- xGen_v2_basic (without cardio spike-in)
+- Agilent_v6_utr
+
 ### `--panel`
 For practical reasons, it can be desirable to determine the coverage of a discrete set of target genes, such as for a gene panel. The pipeline currently
 supports the following panels:
