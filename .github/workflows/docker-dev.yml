@@ -7,9 +7,9 @@ name: Docker
 
 on:
   push:
-    branches: [ devel ]
+    branches: [ dev ]
   pull_request:
-    branches: [ devel ]
+    branches: [ dev ]
 
 
 jobs:
