@@ -69,6 +69,7 @@ For WES samples, the enrichment kit can be specified to enable targetted analysi
 - xGen_v2
 - xGen_v2_basic (without cardio spike-in)
 - Agilent_v6_utr
+- Twist_core (with MT spike-in=
 
 ### `--panel`
 For practical reasons, it can be desirable to determine the coverage of a discrete set of target genes, such as for a gene panel. The pipeline currently
