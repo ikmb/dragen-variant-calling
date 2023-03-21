@@ -6,8 +6,8 @@ Within the results folder, you find:
 
 - [QC Report](#qc)
 - [Patient reports](#patient-report)
-- [Joint Callset](#joint-callset)
-- [Trio Callset](#trio-callset)
+- [Joint Callset](#joint-callset) [optional]
+- [Trio Callset](#trio-callset) [optional]
 - [Variants](#variants)
 - [VEP](#vep)
 
