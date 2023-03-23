@@ -72,6 +72,10 @@ if (params.exome) {
 
 	ch_cnv_panel = Channel.from([])
 } 
+params.exome ? params.out_format = "bam" : params.out_format = "cram"
+params.exome ? params.out_index = "bai" : params.out_index = "crai"
+
+params.expansion_hunter ? params.expansion_json = params.genomes[params.assembly].expansion_catalog : params.expansion_json = null
 
 ch_id_check_bed = Channel.fromPath(file(params.genomes[ params.assembly ].qc_bed, checkIfExists: true))
 
