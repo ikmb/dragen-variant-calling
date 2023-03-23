@@ -110,7 +110,6 @@ workflow.onComplete {
                                         mqc_report = mqc_report[-1]
                                 }
                         }
-
                 } catch (all) {
                         log.warn "[IKMB DragenVariantCalling] Could not attach MultiQC report to summary email"
                 }
@@ -122,12 +121,12 @@ workflow.onComplete {
 
                 try {
                         if( params.plaintext_email ){ throw GroovyException('Send plaintext e-mail, not HTML') }
-                                // Try to send HTML e-mail using sendmail
-                                [ 'sendmail', '-f no-reply@ikmb.uni-kiel.de',  '-t' ].execute() << sendmail_html
-                        } catch (all) {
-                                // Catch failures and try with plaintext
-                                [ 'mail', '-s', subject, params.email ].execute() << email_txt
-                        }
+                        // Try to send HTML e-mail using sendmail
+                        [ 'sendmail', '-f no-reply@ikmb.uni-kiel.de',  '-t' ].execute() << sendmail_html
+                } catch (all) {
+                        // Catch failures and try with plaintext
+                        [ 'mail', '-s', subject, params.email ].execute() << email_txt
+                
                 }
         }
 }
