@@ -1,5 +1,5 @@
-include { PICARD_COLLECT_HS_METRICS_PANEL } from "./../../modules/picard/collect_hs_metrics_panel" 
-include { MULTIQC_PANEL } from "./../../modules/multiqc/main.nf"
+include { PICARD_COLLECT_HS_METRICS_PANEL } from "./../modules/picard/collect_hs_metrics_panel" 
+include { MULTIQC_PANEL } from "./../modules/multiqc/main.nf"
 
 workflow PANEL_QC {
 

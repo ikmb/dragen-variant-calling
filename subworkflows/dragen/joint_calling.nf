@@ -35,7 +35,7 @@ workflow DRAGEN_JOINT_CALLING {
 			MANTA2ALISSA(
 				MAKE_GVCF.out.sv
 			)
-			VCF_COMPRESS(
+			HTSLIB_BGZIP_INDEX(
 				MANTA2ALISSA.out.vcf,
 				"${params.outdir}/ALISSA"
 			)
@@ -70,7 +70,7 @@ workflow DRAGEN_JOINT_CALLING {
 		)
 
 		BCFTOOLS_ADD_HEADER(
-			VCF_INDEX.out.vcf
+			HTSLIB_BGZIP_INDEX.out.vcf
 		)
 		
 	emit:

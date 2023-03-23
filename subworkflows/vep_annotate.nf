@@ -19,7 +19,7 @@ workflow VEP_ANNOTATE {
 		)
 
 		VEP2ALISSA(
-			VEP_ANNOTATE.out.vcf
+			VEP.out.vcf
 		)
 
 		HTSLIB_BGZIP_INDEX(

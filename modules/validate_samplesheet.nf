@@ -6,7 +6,7 @@ process VALIDATE_SAMPLESHEET {
 	path(csv)
 
 	output:
-	path(ss)
+	path(ss), emit: csv
 
 	script:
 	ss = "Samples.validated.csv"
