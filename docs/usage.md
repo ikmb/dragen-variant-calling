@@ -61,7 +61,7 @@ Have the pipeline send a report upon completion to this email adress.
 The mapping reference to be used by Dragen. We have two ALT aware versions available - hg38 with haplotypes and decoys (hg38HD) as well as hg19 (came with Dragen). 
 
 ### `--exome`
-Specifiy that this is an exome analysis - requires '--kit' as well. 
+Specify that this is an exome analysis - requires '--kit' as well. 
 
 ### `--kit` 
 For WES samples, the enrichment kit can be specified to enable targetted analysis and QC metrics. The most likely option to use at the CCGA would be 'xGen_v2' or 'xGen_v2_cardio'. the latter contains some custom content for cardiogenetics.

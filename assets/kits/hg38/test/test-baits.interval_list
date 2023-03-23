@@ -3365,6 +3365,7 @@
 @SQ	SN:HLA-DRB1*15:03:01:01	LN:11567	M5:e6a26b767a62b282e0db211bbc9a7363	AS:38	UR:/seq/references/Homo_sapiens_assembly38/v0/Homo_sapiens_assembly38.fasta	SP:Homo sapiens
 @SQ	SN:HLA-DRB1*15:03:01:02	LN:11569	M5:4e0d459b9bd15bff8645de84334e3d25	AS:38	UR:/seq/references/Homo_sapiens_assembly38/v0/Homo_sapiens_assembly38.fasta	SP:Homo sapiens
 @SQ	SN:HLA-DRB1*16:02:01	LN:11005	M5:4a972df76bd3ee2857b87bd5be5ea00a	AS:38	UR:/seq/references/Homo_sapiens_assembly38/v0/Homo_sapiens_assembly38.fasta	SP:Homo sapiens
+
 chr22	15528159	15528278	+	OR11H1_1.1
 chr22	15528277	15528396	+	OR11H1_1.2
 chr22	15528375	15528494	+	OR11H1_1.3
