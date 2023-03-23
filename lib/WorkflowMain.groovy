@@ -22,7 +22,7 @@ class WorkflowMain {
         def command = "nextflow run ${workflow.manifest.name} --samples Samples.csv --assembly GRCh38 --kit xGen_v2 -profile diagnostic"
         def help_string = ''
         // Help message
-        helpMessage = """
+        help_string = """
         ===============================================================================
         IKMB DRAGEN pipeline | version ${workflow.manifest.version}
         ===============================================================================
