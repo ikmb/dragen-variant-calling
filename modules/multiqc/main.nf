@@ -1,6 +1,8 @@
 process MULTIQC {
 
-    label 'multiqc'
+    label 'short_serial'
+
+    container 'quay.io/biocontainers/multiqc:1.13a--pyhdfd78af_1'
 
     publishDir "${params.outdir}/Summary/", mode: 'copy'
 
@@ -14,10 +16,8 @@ process MULTIQC {
     script:
 
     """
-
     cp $params.logo .
     multiqc -c $config -n  ${params.run_name}_multiqc *
-
     """
 }
 
@@ -25,28 +25,32 @@ process MULTIQC_PANEL {
 
 	tag "${panel_name}"
 
-	label 'multiqc'
+	label 'short_serial'
 
-        publishDir "${params.outdir}/Summary/Panel", mode: "copy"
+    container 'quay.io/biocontainers/multiqc:1.13a--pyhdfd78af_1'
 
-        input:
-        tuple val(panel_name),path('*')
+    publishDir "${params.outdir}/Summary/Panel", mode: "copy"
 
-        output:
-        path("${panel_name}_multiqc.html"), emit: report
+    input:
+    tuple val(panel_name),path('*')
 
-        script:
+    output:
+    path("${panel_name}_multiqc.html"), emit: report
 
-        """
-                cp $params.logo .
-                cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
-                multiqc -c multiqc_config.yaml --title "DRAGEN pipeline report: ${panel_name}" -n ${panel_name}_multiqc *
-        """
+    script:
+
+    """
+    cp $params.logo .
+    cp $baseDir/conf/multiqc_config.yaml multiqc_config.yaml
+    multiqc -c multiqc_config.yaml --title "DRAGEN pipeline report: ${panel_name}" -n ${panel_name}_multiqc *
+    """
 }
 
 process MULTIQC_FASTQC {
 
-    label 'multiqc'
+    label 'short_serial'
+
+    container 'quay.io/biocontainers/multiqc:1.13a--pyhdfd78af_1'
 
     publishDir "${params.outdir}/Summary/FastQC", mode: 'copy'
 

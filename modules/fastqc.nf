@@ -1,5 +1,7 @@
 process FASTQC {
 
+	tag "${meta.patient_id}|${meta.sample_id}"
+
 	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/FastQC", mode: 'copy'
 
 	label 'fastqc'

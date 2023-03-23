@@ -42,14 +42,14 @@ process SOFTWARE_VERSIONS {
 	path('*')
 
 	output:
-	path(yaml_file)
+	path(yaml_file), emit: yaml
 	path("v*.txt")
 
 	script:
 	yaml_file = "software_versions_mqc.yaml"
 
 	"""
- 		echo $workflow.manifest.version &> v_ikmb_dragen_variant_calling.txt
+		echo $workflow.manifest.version &> v_ikmb_dragen_variant_calling.txt
 		echo $workflow.nextflow.version &> v_nextflow.txt
 		parse_versions.pl >  $yaml_file
 	"""

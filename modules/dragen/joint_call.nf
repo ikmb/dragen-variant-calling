@@ -1,8 +1,10 @@
 process JOINT_CALL {
 
+	tag "${meta.patient_id}|${meta.sample_id}"
+
 	label 'dragen'
 
-       	publishDir "${params.outdir}/JointCalling", mode: 'copy'
+    publishDir "${params.outdir}/JointCalling", mode: 'copy'
 
 	input:
 	tuple val(meta),path(gvcfs) 
@@ -20,8 +22,9 @@ process JOINT_CALL {
 
 	def options = ""
 	if (params.ml_dir) {
-                options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
-        }
+        options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
+    }
+	
 	"""
 
 		/opt/edico/bin/dragen_lic -f genome &> $dragen_start

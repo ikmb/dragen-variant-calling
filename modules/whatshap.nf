@@ -1,6 +1,8 @@
 process WHATSHAP {
 
-	label 'whatshap'
+	label 'medium_serial'
+
+	container 'quay.io/biocontainers/whatshap:1.1--py36hae55d0a_1'
 	
 	tag "${meta.patient_id}|${meta.sample_id}"
 

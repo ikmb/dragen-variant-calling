@@ -1,5 +1,9 @@
 // end-to-end single sample variant calling
+// Dragen has many optional arguments for running integrated sub-pipelines
+
 process MAKE_VCF {
+
+	tag "${meta.patient_id}|${meta.sample_id}"
 
 	label 'dragen'
 
@@ -15,7 +19,7 @@ process MAKE_VCF {
 	tuple val(meta),path(bam),path(bai), emit: bam
 	tuple val(meta),path("${outdir}/*"), emit: results
 	tuple path(dragen_start),path(dragen_end), emit: log
-        path("${outdir}/*.csv"), emit: qc
+    path("${outdir}/*.csv"), emit: qc
 	tuple val(meta),path("${outdir}/${sv}"),path("${outdir}/${sv_tbi}"), optional: true, emit: sv
 	tuple val(meta),path("${outdir}/${cnv}"),path("${outdir}/${cnv_tbi}"), optional: true, emit: cnv
 
@@ -38,45 +42,50 @@ process MAKE_VCF {
 	def mv_options = ""
 
 	if (params.ml_dir) {
-                options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true ")
-        }
+        options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true ")
+    }
+
 	if (params.exome) {
 		mv_options = "mkdir -p $outdir/wgs && mv $outdir/*wgs*.csv $outdir/wgs"
 		options = options.concat("--vc-target-bed $bed ")
 		if (params.cnv) {
-                	options = options.concat("--cnv-target-bed $bed ")
+            options = options.concat("--cnv-target-bed $bed ")
 			if (params.cnv_panel) {
 				options = options.concat("--cnv-normals-list ${params.cnv_panel} ")
 			} else {
 				options = options.concat("--cnv-enable-self-normalization true ")
 			} 
-                }
-                if (params.sv) {
+        }
+        if (params.sv) {
 			options = options.concat("--sv-exome true --sv-call-regions-bed $bed ")
-                }
-        } else {
-                if (params.clingen) {
-                        options = options.concat(" --enable-cyp2d6=true --enable-smn=true ")
-                }
+        }
+	} else {
+        if (params.clingen) {
+            options = options.concat(" --enable-cyp2d6=true --enable-smn=true ")
+        }
 		if (params.cnv) {
 			options = options.concat("--cnv-enable-self-normalization true --cnv-interval-width 1000 ")
-                }
         }
+    }
+	
 	if (params.expansion_hunter) {
-                options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
-        }
-        if (params.hla) {
-                options = options.concat(" --enable-hla true ")
-        }
+        options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
+    }
+
+    if (params.hla) {
+        options = options.concat(" --enable-hla true ")
+    }
+	
 	if (params.cnv) {
 		options = options.concat("--enable-cnv true ")
-        }
+    }
+	
 	if (params.sv) {
-        	options = options.concat("--enable-sv true ")
+		options = options.concat("--enable-sv true ")
 		//post = "manta2alissa.pl -i ${outdir}/${meta.sample_id}.sv.vcf.gz -o ${outdir}/${meta.sample_id}.sv2alissa.vcf"
-        }
-                  
-        """
+    }
+    
+	"""
 
 		/opt/edico/bin/dragen_lic -f genome &> $dragen_start
 
@@ -84,28 +93,29 @@ process MAKE_VCF {
 		
 		samplesheet2dragen.pl --samples $samplesheet > files.csv
 
-                /opt/edico/bin/dragen -f \
-                        -r ${params.dragen_ref_dir} \
+        /opt/edico/bin/dragen -f \
+            -r ${params.dragen_ref_dir} \
 			--fastq-list files.csv \
-                        --fastq-list-sample-id ${meta.sample_id} \
-                        --read-trimmers none \
-                        --enable-variant-caller true \
-                        --enable-map-align-output true \
-                        --enable-map-align true \
-                        --enable-duplicate-marking true \
+            --fastq-list-sample-id ${meta.sample_id} \
+            --read-trimmers none \
+            --enable-variant-caller true \
+            --enable-map-align-output true \
+            --enable-map-align true \
+            --enable-duplicate-marking true \
 			--dbsnp $params.dbsnp \
 			${options} \
-                        --intermediate-results-dir ${params.dragen_tmp} \
-                        --output-directory $outdir \
-                        --output-file-prefix ${prefix} \
-                        --output-format $params.out_format
-                	
-			mv $outdir/$bam $bam
-			mv $outdir/$bai $bai
+            --intermediate-results-dir ${params.dragen_tmp} \
+            --output-directory $outdir \
+            --output-file-prefix ${prefix} \
+            --output-format $params.out_format
+	
+		mv $outdir/$bam $bam
+		mv $outdir/$bai $bai
 
 		$mv_options	
 		$post
 
 		/opt/edico/bin/dragen_lic -f genome &> $dragen_end
+
 	"""
 }
