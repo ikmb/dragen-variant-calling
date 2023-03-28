@@ -1,8 +1,12 @@
 process FREEBAYES {
 
+	tag "${meta.patient_id}|${meta.sample_id}"
+
 	publishDir "${params.outdir}/${meta.patient_id}/${meta.sample_id}/ID_Check", mode: 'copy'
 
-	label 'freebayes'
+	label 'medium_serial'
+
+	container 'quay.io/biocontainers/freebayes:1.3.6--h346b5cb_1'
 
 	tag "${meta.patient_id}|${meta.sample_id}"
 
