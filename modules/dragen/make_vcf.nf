@@ -41,7 +41,7 @@ process MAKE_VCF {
 	def post = ""
 	def mv_options = ""
 
-	if (params.ml_dir) {
+	if (params.ml) {
         options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true ")
     }
 

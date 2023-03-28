@@ -1,6 +1,6 @@
 process PICARD_COLLECT_HS_METRICS_PANEL {
 
-	label 'default'
+	container 'ikmb/dragen-variant-calling:1.0'
 
 	tag "${meta.sample_id}|${panel_name}"
 

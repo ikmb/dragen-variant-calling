@@ -14,12 +14,12 @@ workflow ID_CHECK {
 			bams,
 			bed.collect()
 		)
-		BCFTOOLS_ANNOTATE(
+		HTSLIB_BGZIP_INDEX(
 			FREEBAYES.out.vcf,
 			"${params.outdir}/logs"
 		)
-		HTSLIB_BGZIP_INDEX(
-			BCFTOOLS_ANNOTATE.out.vcf
+		BCFTOOLS_ANNOTATE(
+			HTSLIB_BGZIP_INDEX.out.vcf
 		)
 		
 	emit:

@@ -1,25 +1,4 @@
 // ******************************
-// Subworkflows and modules
-// ******************************
-
-include { WGS_QC } from "./../subworkflows/wgs_qc"
-include { EXOME_QC } from "./../subworkflows/exome_qc"
-include { DRAGEN_SINGLE_SAMPLE } from "./../subworkflows/dragen/single_sample"
-include { DRAGEN_TRIO_CALLING } from "./../subworkflows/dragen/trio_calling"
-include { DRAGEN_JOINT_CALLING } from "./../subworkflows/dragen/joint_calling"
-include { WHATSHAP } from "./../modules/whatshap"
-include { VEP_ANNOTATE } from "./../subworkflows/vep_annotate"
-include { PICARD_INTERVAL_LIST_TO_BED } from "./../modules/picard/interval_list_to_bed"
-include { BCFTOOLS_STATS } from "./../modules/bcftools/stats"
-include { VALIDATE_SAMPLESHEET } from "./../modules/validate_samplesheet"
-include { MULTIQC; MULTIQC_FASTQC } from "./../modules/multiqc/main.nf"
-include { DRAGEN_USAGE } from "./../modules/logging/main.nf"
-include { VERSIONS } from "./../subworkflows/versions"
-include { PANEL_QC } from "./../subworkflows/panel_qc"
-include { ID_CHECK } from "./../subworkflows/id_check"
-include { FASTQC } from "./../modules/fastqc"
-
-// ******************************
 // Pipeline options and settings
 // ******************************
 
@@ -39,11 +18,7 @@ if (params.exome) {
     )
 
 	if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
-		ch_cnv_panel = Channel.fromPath(
-            file(params.genomes[params.assembly].kits[params.kit].cnv_panel,checkIfExists: true)
-        )
-	} else {
-        ch_cnv_panel = Channel.from([])
+		params.cnv_panel = params.genomes[params.assembly].kits[params.kit].cnv_panel
 	}
 
 	// Specific target panels
@@ -82,13 +57,35 @@ if (params.exome) {
 if (params.expansion_hunter ) {  params.expansion_json = params.genomes[params.assembly].expansion_catalog } else {  params.expansion_json = null }
 
 ch_id_check_bed = Channel.fromPath(file(params.genomes[ params.assembly ].qc_bed, checkIfExists: true))
+multiqc_config = Channel.fromPath(file("${baseDir}/conf/multiqc_config.yaml", checkIfExists: true))
+if (params.genomes[params.assembly].ml_dir) { params.ml_dir = params.genomes[params.assembly].ml_dir } else { params.ml_dir = null }
+
+// ******************************
+// Subworkflows and modules
+// ******************************
+
+include { WGS_QC } from "./../subworkflows/wgs_qc"
+include { EXOME_QC } from "./../subworkflows/exome_qc"
+include { DRAGEN_SINGLE_SAMPLE } from "./../subworkflows/dragen/single_sample"
+include { DRAGEN_TRIO_CALLING } from "./../subworkflows/dragen/trio_calling"
+include { DRAGEN_JOINT_CALLING } from "./../subworkflows/dragen/joint_calling"
+include { WHATSHAP } from "./../modules/whatshap"
+include { VEP_ANNOTATE } from "./../subworkflows/vep_annotate"
+include { PICARD_INTERVAL_LIST_TO_BED } from "./../modules/picard/interval_list_to_bed"
+include { BCFTOOLS_STATS } from "./../modules/bcftools/stats"
+include { VALIDATE_SAMPLESHEET } from "./../modules/validate_samplesheet"
+include { MULTIQC; MULTIQC_FASTQC } from "./../modules/multiqc/main.nf"
+include { DRAGEN_USAGE } from "./../modules/logging/main.nf"
+include { VERSIONS } from "./../subworkflows/versions"
+include { PANEL_QC } from "./../subworkflows/panel_qc"
+include { ID_CHECK } from "./../subworkflows/id_check"
+include { FASTQC } from "./../modules/fastqc"
 
 // ************************************************
 // Pipeline input(s)
 // ************************************************
 
 ch_samplesheet = Channel.fromPath(params.samples)
-	.splitCsv(sep: ',', header: true)
 
 ch_ref = Channel.fromPath( [ file(params.ref), file(params.ref + ".fai") ] )
 	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
@@ -111,7 +108,7 @@ workflow DRAGEN_VARIANT_CALLING {
         ch_samples = VALIDATE_SAMPLESHEET.out.csv
 
         ch_samples
-            .splitCsv ( header: true, sep: ';')
+            .splitCsv ( header: true, sep: ',')
             .map { create_fastq_channel(it) }
             .set { ch_reads }        
             

@@ -15,10 +15,10 @@ workflow PANEL_QC {
             targets.collect()
         )
 		MULTIQC_PANEL(
-			PANEL_REF_COVERAGE.out.coverage.groupTuple()
+			PICARD_COLLECT_HS_METRICS_PANEL.out.coverage.groupTuple()
 		)
 	
 	emit:
-		qc = MULTIQC_PANEL.out.report
+		qc = MULTIQC_PANEL.out.html
 
 }

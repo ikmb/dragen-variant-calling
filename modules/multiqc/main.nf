@@ -11,7 +11,7 @@ process MULTIQC {
     path(config)
 
     output:
-    path("${params.run_name}_multiqc.html"), emit: report
+    path("${params.run_name}_multiqc.html"), emit: html
 
     script:
 
@@ -35,7 +35,7 @@ process MULTIQC_PANEL {
     tuple val(panel_name),path('*')
 
     output:
-    path("${panel_name}_multiqc.html"), emit: report
+    path("${panel_name}_multiqc.html"), emit: html
 
     script:
 
@@ -59,7 +59,7 @@ process MULTIQC_FASTQC {
     path(config)
 
     output:
-    path("${params.run_name}_fastqc_multiqc.html"), emit: report
+    path("${params.run_name}_fastqc_multiqc.html"), emit: html
 
     script:
 

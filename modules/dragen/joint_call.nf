@@ -22,8 +22,8 @@ process JOINT_CALL {
 
 	def options = ""
 	if (params.ml_dir) {
-        options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
-    }
+        	options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true")
+    	}
 	
 	"""
 
