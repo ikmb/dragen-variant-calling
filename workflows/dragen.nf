@@ -160,7 +160,7 @@ workflow DRAGEN_VARIANT_CALLING {
         } else {
 
             DRAGEN_SINGLE_SAMPLE(
-                ch_eads,
+                ch_reads,
                 ch_bed_intervals,
                 ch_samples
             )
