@@ -16,6 +16,7 @@ workflow DRAGEN_JOINT_CALLING {
         reads
         bed
         samplesheet
+	cnv_panel
 
     main:
 
@@ -27,7 +28,8 @@ workflow DRAGEN_JOINT_CALLING {
                 tuple(new_meta,l,r)
             }.groupTuple(),
             bed.collect(),
-            samplesheet.collect()
+            samplesheet.collect(),
+            cnv_panel
         )
         ch_secondary = Channel.from([])
 

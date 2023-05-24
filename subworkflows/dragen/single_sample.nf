@@ -12,6 +12,7 @@ workflow DRAGEN_SINGLE_SAMPLE {
         reads
         bed
         samplesheet
+	cnv_panel
 
     main:
 
@@ -23,7 +24,8 @@ workflow DRAGEN_SINGLE_SAMPLE {
                 tuple(new_meta,l,r)
             }.groupTuple(),
             bed.collect(),
-            samplesheet.collect()
+            samplesheet.collect(),
+	    cnv_panel
         )
 
         ch_secondary = Channel.from([])

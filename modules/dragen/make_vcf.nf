@@ -13,6 +13,7 @@ process MAKE_VCF {
     tuple val(meta), path(lreads),path(rreads)
     path(bed)
     path(samplesheet)
+    path(cnv_panel)
 
     output:
     tuple val(meta),path("${outdir}/*filtered.vcf.gz"), emit: vcf
@@ -41,24 +42,37 @@ process MAKE_VCF {
     def post = ""
     def mv_options = ""
 
-    if (params.ml) {
-        options = options.concat(" --vc-ml-dir ${params.ml_dir} --vc-ml-enable-recalibration=true ")
+    // Disable maximum likelihood filter
+    if (params.no_ml) {
+        options = options.concat(" --vc-ml-enable-recalibration=false ")
+    } else {
+        options = options.concat(" --vc-ml-dir=/opt/edico/resources/ml_model/hg38 --vc-ml-enable-recalibration=true ")
     }
 
+    // Enable calling of PgX star alleles
+    if (params.pgx) {
+        options = options.concat(" --enable-starallele true ")
+    }
+
+    // Enable read trimming
+
+    // This is an exome run
     if (params.exome) {
         mv_options = "mkdir -p $outdir/wgs && mv $outdir/*wgs*.csv $outdir/wgs"
-        options = options.concat("--vc-target-bed $bed ")
+        options = options.concat(" --vc-target-bed $bed ")
         if (params.cnv) {
-            options = options.concat("--cnv-target-bed $bed ")
-            if (params.cnv_panel) {
-                options = options.concat("--cnv-normals-list ${params.cnv_panel} ")
+            options = options.concat(" --cnv-target-bed $bed ")
+            if (cnv_panel) {
+                options = options.concat(" --cnv-normals-list ${cnv_panel} ")
             } else {
-                options = options.concat("--cnv-enable-self-normalization true ")
+                options = options.concat(" --cnv-enable-self-normalization true ")
             } 
         }
         if (params.sv) {
-            options = options.concat("--sv-exome true --sv-call-regions-bed $bed ")
+            options = options.concat(" --sv-exome true --sv-call-regions-bed $bed ")
+
         }
+    // this is WGS data
     } else {
         if (params.clingen) {
             options = options.concat(" --enable-cyp2d6=true --enable-smn=true ")
@@ -68,20 +82,24 @@ process MAKE_VCF {
         }
     }
     
+    // Run Expansionhunter
     if (params.expansion_hunter) {
         options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
     }
 
+    // Run HLA caller
     if (params.hla) {
         options = options.concat(" --enable-hla true ")
     }
     
+    // Run CNV caller
     if (params.cnv) {
-        options = options.concat("--enable-cnv true ")
+        options = options.concat(" --enable-cnv true ")
     }
     
+    // Run SV caller
     if (params.sv) {
-        options = options.concat("--enable-sv true ")
+        options = options.concat(" --enable-sv true ")
         //post = "manta2alissa.pl -i ${outdir}/${meta.sample_id}.sv.vcf.gz -o ${outdir}/${meta.sample_id}.sv2alissa.vcf"
     }
     
@@ -97,7 +115,6 @@ process MAKE_VCF {
             -r ${params.dragen_ref_dir} \
             --fastq-list files.csv \
             --fastq-list-sample-id ${meta.sample_id} \
-            --read-trimmers none \
             --enable-variant-caller true \
             --enable-map-align-output true \
             --enable-map-align true \

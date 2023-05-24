@@ -125,8 +125,8 @@ recommended to configure a curated panel of normals. This currently only exists 
 ###  `--sv` [ true | false (default) ]
 Enable structural variant calling. This is only recommended for WGS data.
 
-### `--ml` [ true (default) | false ]
-Use ML filter instead of built-in hard filtering only. Only available for hg38. 
+### `--no_ml` [ true (default) | false ]
+Disable the default ML variant filter.
 
 ## Expert options
 

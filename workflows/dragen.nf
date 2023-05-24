@@ -18,7 +18,9 @@ if (params.exome) {
     )
 
 	if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
-		params.cnv_panel = params.genomes[params.assembly].kits[params.kit].cnv_panel
+		ch_cnv_panel = Channel.fromPath(params.genomes[params.assembly].kits[params.kit].cnv_panel).collect()
+	} else {
+		ch_cnv_panel = Channel.value([])
 	}
 
 	// Specific target panels
@@ -80,6 +82,7 @@ include { VERSIONS } from "./../subworkflows/versions"
 include { PANEL_QC } from "./../subworkflows/panel_qc"
 include { ID_CHECK } from "./../subworkflows/id_check"
 include { FASTQC } from "./../modules/fastqc"
+include { FASTP } from "./../modules/fastp"
 
 // ************************************************
 // Pipeline input(s)
@@ -124,13 +127,20 @@ workflow DRAGEN_VARIANT_CALLING {
             ch_reads   
         )
 
+        FASTP(
+            ch_reads
+        )
+
+        ch_reads_trim = FASTP.out.reads
+
         // Perform joint-calling of samples
         if (params.joint_calling) {
 
             DRAGEN_JOINT_CALLING(
-                ch_reads,
+                ch_reads_trim,
                 ch_bed_intervals,
-                ch_samples
+                ch_samples,
+		ch_cnv_panel
             )
 
             vcf         = DRAGEN_JOINT_CALLING.out.vcf
@@ -144,9 +154,10 @@ workflow DRAGEN_VARIANT_CALLING {
         } else if (params.trio) {
 
             DRAGEN_TRIO_CALLING(
-                ch_reads,
+                ch_reads_trim,
                 ch_bed_intervals,
-                ch_samples
+                ch_samples,
+		ch_cnv_panel
             )
 
             vcf         = DRAGEN_TRIO_CALLING.out.vcf
@@ -160,9 +171,10 @@ workflow DRAGEN_VARIANT_CALLING {
         } else {
 
             DRAGEN_SINGLE_SAMPLE(
-                ch_reads,
+                ch_reads_trim,
                 ch_bed_intervals,
-                ch_samples
+                ch_samples,
+		ch_cnv_panel
             )
 
             vcf_sample  = DRAGEN_SINGLE_SAMPLE.out.vcf

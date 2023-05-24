@@ -74,7 +74,7 @@ foreach my $file (@files) {
 
         my $clinical = decode_json($response->{content});
 
-	if (defined $clinical->{'data'}) {
+	if (defined $clinical->{'data'} && $clinical->{'data'}->{'ibdbase'}) {
 	        my $cdata = $clinical->{'data'} ;
 		my $alissa = $cdata->{'ibdbase'}{'alissa_id'} ;		
 		$info{$library}{'alissa_id'} = $alissa ;
