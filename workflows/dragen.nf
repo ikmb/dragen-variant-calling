@@ -2,6 +2,7 @@
 // Pipeline options and settings
 // ******************************
 
+// Requested analysis is for exomes
 if (params.exome) {
 
     params.out_format = "bam"
@@ -17,14 +18,16 @@ if (params.exome) {
         file(baits, checkIfExists: true)
     )
 
-	if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
-		ch_cnv_panel = Channel.fromPath(params.genomes[params.assembly].kits[params.kit].cnv_panel).collect()
-	} else {
-		ch_cnv_panel = Channel.value([])
-	}
+    if (params.cnv_panel) {
+        ch_cnv_panel = Channel.fromPath(params.cnv_panel, checkIfExists: true).collect()
+    } else if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
+        ch_cnv_panel = Channel.fromPath(params.genomes[params.assembly].kits[params.kit].cnv_panel).collect()
+    } else {
+        ch_cnv_panel = Channel.value([])
+    }
 
-	// Specific target panels
-	if (params.panel) {
+    // Specific target panels
+    if (params.panel) {
         panel = params.genomes[params.assembly].panels[params.panel].intervals
         ch_panels = Channel.from( [ params.panel, file(panel, checkIfExists: true) ] )
 	} else if (params.panel_intervals) {
@@ -42,6 +45,7 @@ if (params.exome) {
         ch_panels = Channel.from([])
     }
 
+// analysis if for genomes
 } else {
 
     params.out_format = "cram"
@@ -60,6 +64,7 @@ if (params.expansion_hunter ) {  params.expansion_json = params.genomes[params.a
 
 ch_id_check_bed = Channel.fromPath(file(params.genomes[ params.assembly ].qc_bed, checkIfExists: true))
 multiqc_config = Channel.fromPath(file("${baseDir}/conf/multiqc_config.yaml", checkIfExists: true))
+
 if (params.genomes[params.assembly].ml_dir) { params.ml_dir = params.genomes[params.assembly].ml_dir } else { params.ml_dir = null }
 
 // ******************************
@@ -88,7 +93,7 @@ include { FASTP } from "./../modules/fastp"
 // Pipeline input(s)
 // ************************************************
 
-ch_samplesheet = Channel.fromPath(params.samples)
+ch_samplesheet = Channel.fromPath(params.samples, checkIfExists: true)
 
 ch_ref = Channel.fromPath( [ file(params.ref), file(params.ref + ".fai") ] )
 	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
@@ -140,7 +145,7 @@ workflow DRAGEN_VARIANT_CALLING {
                 ch_reads_trim,
                 ch_bed_intervals,
                 ch_samples,
-		ch_cnv_panel
+                ch_cnv_panel
             )
 
             vcf         = DRAGEN_JOINT_CALLING.out.vcf
@@ -157,7 +162,7 @@ workflow DRAGEN_VARIANT_CALLING {
                 ch_reads_trim,
                 ch_bed_intervals,
                 ch_samples,
-		ch_cnv_panel
+                ch_cnv_panel
             )
 
             vcf         = DRAGEN_TRIO_CALLING.out.vcf
@@ -174,7 +179,7 @@ workflow DRAGEN_VARIANT_CALLING {
                 ch_reads_trim,
                 ch_bed_intervals,
                 ch_samples,
-		ch_cnv_panel
+                ch_cnv_panel
             )
 
             vcf_sample  = DRAGEN_SINGLE_SAMPLE.out.vcf
@@ -248,7 +253,6 @@ workflow DRAGEN_VARIANT_CALLING {
             ch_qc.collect(),
             multiqc_config.collect()
         )
-
 
     emit:
     qc = MULTIQC.out.html

@@ -39,7 +39,6 @@ process MAKE_VCF {
     dragen_end = prefix + ".dragen_log.vcf.end.log"
             
     def options = ""
-    def post = ""
     def mv_options = ""
 
     // Disable maximum likelihood filter
@@ -49,12 +48,10 @@ process MAKE_VCF {
         options = options.concat(" --vc-ml-dir=/opt/edico/resources/ml_model/hg38 --vc-ml-enable-recalibration=true ")
     }
 
-    // Enable calling of PgX star alleles
+    // Enable calling of PgX star alleles, only dragen > 4.0
     if (params.pgx) {
         options = options.concat(" --enable-starallele true ")
     }
-
-    // Enable read trimming
 
     // This is an exome run
     if (params.exome) {
@@ -82,6 +79,10 @@ process MAKE_VCF {
         }
     }
     
+    // *****************
+    // Universal options
+    // *****************
+
     // Run Expansionhunter
     if (params.expansion_hunter) {
         options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")

@@ -40,7 +40,6 @@ process MAKE_GVCF {
     dragen_end = prefix + "dragen_log.gvcf.end.log"
 
     def options = ""
-    def post = ""
     def mv_options = ""
 
     // Disable maximum likelihood filtering
@@ -50,7 +49,7 @@ process MAKE_GVCF {
         options = options.concat(" --vc-ml-dir=/opt/edico/resources/ml_model/hg38 --vc-ml-enable-recalibration=true ")
     }
 
-    // Enable calling of PgX star alleles
+    // Enable calling of PgX star alleles - only Dragen > 4.0
     if (params.pgx) {
         options = options.concat(" --enable-starallele true ")
     }
@@ -79,6 +78,11 @@ process MAKE_GVCF {
             options = options.concat(" --cnv-enable-self-normalization true --cnv-interval-width 1000 ")
         }
     }
+
+    // *****************
+    // Universal options
+    // *****************
+
     // Run expansion hunter
     if (params.expansion_hunter) { 
                 options = options.concat(" --repeat-genotype-enable=true --repeat-genotype-specs=${params.expansion_json} ")
@@ -91,12 +95,12 @@ process MAKE_GVCF {
     if (params.cnv) {
         options = options.concat(" --enable-cnv true ")
     }
- 
+
     // Run SV caller
     if (params.sv) {
         options = options.concat(" --enable-sv true ")
-        //post = "manta2alissa.pl -i ${outdir}/${meta.sample_id}.sv.vcf.gz -o ${outdir}/${meta.sample_id}.sv2alissa.vcf"
     }
+
     """
 
     /opt/edico/bin/dragen_lic -f genome &> $dragen_start

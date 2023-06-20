@@ -14,4 +14,5 @@ against hg38HD as well as hg19, for genomes or exomes. For more details, see the
 3. [Running the pipeline](docs/usage.md)
 4. [Output](docs/output.md)
 5. [Troubleshooting](docs/troubleshooting.md)
+6. [Developer Guide](docs/development.md)
 
