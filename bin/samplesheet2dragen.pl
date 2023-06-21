@@ -40,18 +40,15 @@ foreach my $line (<SAMPLES>) {
 	my @elements = split "," , $line ;
 	my $file = @elements[-6];
 	my $fpath = (split "/", $file)[-1];
-        my $fpath_trim = $fpath =~ s/\.gz/_trimmed.fastq.gz/r ;
 
-	if (defined $set{ $fpath_trim }) {
+	if (defined $set{ $fpath }) {
 
 		my ($famid,$individ,$rgid,$rgsm,$rglb,$lane,$left,$right,$patid,$matid,$sex,$pheno) = @elements;
 
                 $left = (split "/" , $left)[-1] ;
                 $right = (split "/", $right)[-1] ;
-                my $l = $left =~ s/\.gz/_trimmed.fastq.gz/r ;
-                my $r = $right =~ s/\.gz/_trimmed.fastq.gz/r ;
 
-		printf $rgid . "," . $rgsm . "," . $rglb . "," . $lane . "," . $l . "," . $r . "\n";
+		printf $rgid . "," . $rgsm . "," . $rglb . "," . $lane . "," . $left . "," . $right . "\n";
 	}
 }
 

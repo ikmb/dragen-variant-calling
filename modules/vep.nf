@@ -2,7 +2,7 @@ process VEP {
 
     label 'medium_parallel'
 
-    container 'quay.io/biocontainers/ensembl-vep:99.2--pl526hecc5488_0'
+    container 'quay.io/biocontainers/ensembl-vep:109.3--pl5321h2a3209d_1'
 
     tag "${meta.patient_id}|${meta.sample_id}"
 
@@ -17,6 +17,12 @@ process VEP {
     script:
     vcf_annotated = vcf.getBaseName() + ".vep.vcf"
 
+    def options = ""
+    if (params.exome) {
+        options = "--af_gnomade"
+    } else {
+        options = "--af_gnomadg"
+    }
     """
         vep --offline \
             --cache \
@@ -29,12 +35,9 @@ process VEP {
             --plugin dbNSFP,${params.dbnsfp_db},${params.dbnsfp_fields} \
             --plugin dbscSNV,${params.dbscsnv_db} \
             --plugin CADD,${params.cadd_snps},${params.cadd_indels} \
-            --plugin ExACpLI \
-            --plugin UTRannotator \
             --plugin Mastermind,${params.vep_mastermind}\
             --plugin SpliceAI,${params.spliceai_fields} \
             --fasta $params.ref \
-            --af_gnomadg \
             --fork ${task.cpus} \
             --vcf \
             --per_gene \

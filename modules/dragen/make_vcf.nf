@@ -131,7 +131,6 @@ process MAKE_VCF {
         mv $outdir/$bai $bai
 
         $mv_options    
-        $post
 
         /opt/edico/bin/dragen_lic -f genome &> $dragen_end
 

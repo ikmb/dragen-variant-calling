@@ -125,7 +125,6 @@ process MAKE_GVCF {
         --output-format $params.out_format $options
 
     $mv_options
-    $post 
 
     /opt/edico/bin/dragen_lic -f genome &> $dragen_end
 
