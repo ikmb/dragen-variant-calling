@@ -5,7 +5,7 @@
 A basic command to execute the pipeline will look as follows:
 
 ```bash
-nextflow run ikmb/dragen-variant-calling --samples Samples.csv --assembly hg38 --exome --kit xGen_v2
+nextflow run ikmb/dragen-variant-calling --samples Samples.csv --exome --kit xGen_v2
 ```
 
 Information on the command line options are listed in the following:
@@ -57,9 +57,6 @@ Please note that the names of the final files will use the value you have entere
 ### `--email` [ false (default) | me@somewhere.org ]
 Have the pipeline send a report upon completion to this email adress. 
 
-### `--assembly` [ hg38 (default), hg19 ] 
-The mapping reference to be used by Dragen. We have two ALT aware versions available - hg38 with haplotypes and decoys (hg38HD) as well as hg19 (came with Dragen). 
-
 ### `--exome`
 Specify that this is an exome analysis - requires '--kit' as well. 
 
@@ -82,12 +79,11 @@ supports the following panels:
 - Non-Compaction Kardiomyopathie [cardio_non_compaction]
 - Pulmonale Hypertonie 2021 [cardio_pah_2021]
 - Gene Immundefekt AGG Exom 2022 [immundef_agg_exom_2022]
-- Gene Immundefekt eoIBD 2022 [immundef_eoibd_exom_2022]
+- Gene Immundefekt eoIBD 2023 [immundef_eoibd_exom_2023]
 - Gene Immundefekt HGG 2022 [immundef_hgg_exom_2022]
-- Gene Immundefekt Agammaglobulinämie (25kb panel) [IMM_AGG]
-- Gene Immundefekt Hypogammaglobulinämie (25kb panel) [IMM_HGG]
-- Gene Immundefekt großes Panel [IMM]
-- Gene Immundefekt intestinal (25kb panel) [IMM_IBD]
+- Gene Immundefekt Agammaglobulinämie 2022 [immundef_agg_exom_2022]
+- Gene Immundefekt Hypogammaglobulinämie 2022 [immundef_hgg_exom_2022]
+- Gene Immundefekt großes Panel 2023 [immundef_komplett_exom_2023]
 - Breast cancer panel [ breast_cancer ]
 - Liver disease [ Liver ]
 - Intellectual disability [ Intellectual_disability ]

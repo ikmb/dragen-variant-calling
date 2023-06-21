@@ -35,10 +35,10 @@ In brief:
 - A samplesheet is read and turned into a Nextflow channel with a metadata object and raw reads included
 - Data is passed forward to the Dragen module - either for single-sample, joint or trio calling (depending on the options provided by the user)
 - Within the Dragen module, several things happen
- - The samplesheet is turned into a Dragen-compliant "manifest" (input-csv) based on the read data seen in the process folder (because we can have multiple sets of PE files for one patient, sorting this out beforehand seemed a bit complicated)
- - Optional steps for processing are switched on depending on user-provided options and whether or not the data comes from exome or genome sequencing
- - The actual Dragen process is executed
- - Various specific output items are emitted in dedicated channels 
+  - The samplesheet is turned into a Dragen-compliant "manifest" (input-csv) based on the read data seen in the process folder (because we can have multiple sets of PE files for one patient, sorting this out beforehand seemed a bit complicated)
+  - Optional steps for processing are switched on depending on user-provided options and whether or not the data comes from exome or genome sequencing
+  - The actual Dragen process is executed
+  - Various specific output items are emitted in dedicated channels 
 - VCF files are annotated
 - Additional statistics are computed
 - Dragen processing logs are collected across all Dragen jobs to summarize the amount of bases used
@@ -52,13 +52,17 @@ Gene panels are used to evaluate the sequencing success for a sample based on th
 
 2) Using the [perl script](../bin/ensembl_panel2bed.pl) included with this pipeline, turn the gene list into an exon-level BED file (using only canonical transcripts)
 
-`perl ensembl_panel2bed.pl --infile gene_lists/my_gene_list.txt > hg38/my_gene_list.bed`
+```bash
+perl ensembl_panel2bed.pl --infile gene_lists/my_gene_list.txt > hg38/my_gene_list.bed
+```
 
 Note that the pipeline will throw an error if one of your genes was not found. This most likely means that you used a name that is not HGNC compliant. Try searching HGNC and/or EnsEMBL for the correct spelling/name.
 
 3) Convert the BED file into a picard-style interval list using picard tools (picard BedToIntervalList) and store both the bed file and the interval list in the subfolder `assets/panels/hg38`
 
-`picard I=my_gene_list.bed O=my_gene_list.interval_list SD=/work_ifs/ikmb_repository/references/dragen/hg38/hg38.fa`
+```bash
+picard BedToIntervalList I=my_gene_list.bed O=my_gene_list.interval_list SD=/work_ifs/ikmb_repository/references/dragen/hg38/hg38.fa
+```
 
 4) Add the new panel to the resource config file in `conf/resources.config` 
 
