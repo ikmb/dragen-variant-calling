@@ -87,7 +87,6 @@ include { VERSIONS } from "./../subworkflows/versions"
 include { PANEL_QC } from "./../subworkflows/panel_qc"
 include { ID_CHECK } from "./../subworkflows/id_check"
 include { FASTQC } from "./../modules/fastqc"
-include { FASTP } from "./../modules/fastp"
 
 // ************************************************
 // Pipeline input(s)
@@ -127,22 +126,16 @@ workflow DRAGEN_VARIANT_CALLING {
             ch_bed_intervals = ch_bed
         }
 
-        // Read-QC prior to trimming
+        // Read-QC prior
         FASTQC(
             ch_reads   
         )
-
-        FASTP(
-            ch_reads
-        )
-
-        ch_reads_trim = FASTP.out.reads
 
         // Perform joint-calling of samples
         if (params.joint_calling) {
 
             DRAGEN_JOINT_CALLING(
-                ch_reads_trim,
+                ch_reads,
                 ch_bed_intervals,
                 ch_samples,
                 ch_cnv_panel
@@ -159,7 +152,7 @@ workflow DRAGEN_VARIANT_CALLING {
         } else if (params.trio) {
 
             DRAGEN_TRIO_CALLING(
-                ch_reads_trim,
+                ch_reads,
                 ch_bed_intervals,
                 ch_samples,
                 ch_cnv_panel
@@ -176,7 +169,7 @@ workflow DRAGEN_VARIANT_CALLING {
         } else {
 
             DRAGEN_SINGLE_SAMPLE(
-                ch_reads_trim,
+                ch_reads,
                 ch_bed_intervals,
                 ch_samples,
                 ch_cnv_panel

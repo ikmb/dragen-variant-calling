@@ -3,14 +3,18 @@
 # Overview
 
 [The code](#the-code)
+
 [The workflow](#understanding-the-workflow)
+
+[Gene Panels](#adding-new-gene-panels)
+
 [CNV panel of normals](#creating-cnv-panels)
 
 # The code
 
 This pipelines uses Nextflow [DSL2](https://www.nextflow.io/docs/latest/dsl2.html) code conventions. The general structure can be broken down as follows:
 
-- `main.nf` is the entry into the pipeline. It loads some library files and calls the actual workflow in `workflows/dragen.nf``
+- `main.nf` is the entry into the pipeline. It loads some library files and calls the actual workflow in `workflows/dragen.nf`
 - `workflows/dragen.nf` defines the main logic of the pipeline. It sets some key options, reads the samplesheet and calls the various subworkflows and modules
 - `subworkflows/` location where self-contained processing chains are defined (also part of the pipeline logic). 
 - `modules/` the various process definitions that make up the pipeline
@@ -40,6 +44,25 @@ In brief:
 - Dragen processing logs are collected across all Dragen jobs to summarize the amount of bases used
 - A MultiQC report is generated
 
+# Adding new gene panels
+
+Gene panels are used to evaluate the sequencing success for a sample based on the coverage of diagnostically relevant genes. To add new gene panels, the following procedure is recommended:
+
+1) Write all [HGNC-compliant](https://www.genenames.org/) gene names in a text file (line by line) and store it in `assets/panels/gene_lists`. If a gene goes by multiple names, you can write them in the same line, separated by ','.
+
+2) Using the [perl script](../bin/ensembl_panel2bed.pl) included with this pipeline, turn the gene list into an exon-level BED file (using only canonical transcripts)
+
+`perl ensembl_panel2bed.pl --infile gene_lists/my_gene_list.txt > hg38/my_gene_list.bed`
+
+Note that the pipeline will throw an error if one of your genes was not found. This most likely means that you used a name that is not HGNC compliant. Try searching HGNC and/or EnsEMBL for the correct spelling/name.
+
+3) Convert the BED file into a picard-style interval list using picard tools (picard BedToIntervalList) and store both the bed file and the interval list in the subfolder `assets/panels/hg38`
+
+`picard I=my_gene_list.bed O=my_gene_list.interval_list SD=/work_ifs/ikmb_repository/references/dragen/hg38/hg38.fa`
+
+4) Add the new panel to the resource config file in `conf/resources.config` 
+
+Please note that the perl script requires a working installation of the [EnsEMBL API](https://www.ensembl.org/info/docs/api/api_installation.html) to be installed in version 109. You can do this in e.g. a conda environment or directly on the system. Trying to containerize this has sadly not been successful.
 # Creating CNV panels
 
 CNV panels must be re-computed if any of the following components are changed:
@@ -49,7 +72,7 @@ CNV panels must be re-computed if any of the following components are changed:
 - The exome kit
 - The sequencing instrument/technology
 
-The firs two points do not require fresh sequencing data. If however a new generation of sequencer was used or the exome kit was in some way changed (i.e. new version), new data must be produced first!
+The firs two points do not require fresh sequencing data. If however a new generation of sequencer was used or the exome kit was in some way changed (i.e. new version), new data should be produced first!
 
 ## Preparation
 
@@ -73,5 +96,5 @@ The panel-of-normals can now be provided as a text file listing the full path to
 
 ## Caveats
 
-This pipeline is strictly version controlled; this also means the reference that are used. Please note therefore that updates you make to the panel-of-normals exists only from the point at which it was introduced into the code base. You will not be able run an older version of the pipeline on new data with your updated panel-of-normals being used automatically. In such a scenario, you must provide your PoN via the command line option `--cnv_panel`. 
+This pipeline is strictly version controlled; this includes (most of) the reference that are used. Please note therefore that updates you make to the panel-of-normals exists only from the point forward at which it was introduced into the code base. You will not be able run an older version of the pipeline on new data with your updated panel-of-normals being used automatically. In such a scenario, you must provide your PoN via the command line option `--cnv_panel` - although you may still run into the issue that the version of the Dragen or its references are then mismatched to your PoN. 
 
