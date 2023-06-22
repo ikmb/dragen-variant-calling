@@ -18,11 +18,8 @@ process VEP {
     vcf_annotated = vcf.getBaseName() + ".vep.vcf"
 
     def options = ""
-    if (params.exome) {
-        options = "--af_gnomade"
-    } else {
-        options = "--af_gnomadg"
-    }
+    options = " --af_gnomade --af_gnomadg "
+
     """
         vep --offline \
             --cache \

@@ -67,7 +67,26 @@ my %recover = ( "ada_score" => { "Type" => "Float", "Number" => "1"},
 		"SpliceAI_pred_DS_AL" => { "Type" => "Float", "Number" => "1"},
 		"SpliceAI_pred_DS_DG" => { "Type" => "Float", "Number" => "1"},
 		"SpliceAI_pred_DS_DL" => { "Type" => "Float", "Number" => "1"},
-		"SpliceAI_cutoff" => { "Type" => "String", "Number" => "1"}
+		"SpliceAI_cutoff" => { "Type" => "String", "Number" => "1" },
+                "gnomADe_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADe_AFR_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADe_AMR_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADe_ASJ_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADe_EAS_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADe_FIN_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADe_NFE_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADe_OTH_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADe_SAS_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_AFR_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_AMR_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_ASJ_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_EAS_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_FIN_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_NFE_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_OTH_AF" => { "Type" => "Float", "Number" => "1"},
+                "gnomADg_SAS_AF" => { "Type" => "Float", "Number" => "1"}
+
 	);
 
 while (<$IN>) {

@@ -1,5 +1,7 @@
 process VEP2ALISSA {
 
+        publishDir "${params.outdir}/VEP", mode: 'copy'
+
 	tag "${meta.patient_id}|${meta.sample_id}"
 
 	input:
