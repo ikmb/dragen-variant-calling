@@ -6,6 +6,8 @@
 
 [The workflow](#understanding-the-workflow)
 
+[ Release checklist](#release-checklist)
+
 [Gene Panels](#adding-new-gene-panels)
 
 [CNV panel of normals](#creating-cnv-panels)
@@ -43,6 +45,22 @@ In brief:
 - Additional statistics are computed
 - Dragen processing logs are collected across all Dragen jobs to summarize the amount of bases used
 - A MultiQC report is generated
+
+# Release checklist
+
+Below follow some general points to be mindful of when updating the pipeline and drafting a new release. 
+
+## Updating VEP version
+
+If VEP is updated, this necessitates the following changes:
+
+- re-computing all gene panels, starting from the gene lists under [gene_lists](../assets/panels/gene_lists)
+  - all panel reference coverages, for at least 100 BAM files that have been aligned with the to-be-used version of Dragen
+- the VEP [module](../modules/vep.nf) to reflect any necessary syntax changes (if any)
+- the local VEP references and plugins - as defined in the site-specific config [file](../conf/diagnostic.config)
+
+## Updating exome kit(s)
+
 
 # Adding new gene panels
 

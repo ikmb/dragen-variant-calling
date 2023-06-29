@@ -16,7 +16,7 @@ workflow DRAGEN_JOINT_CALLING {
         reads
         bed
         samplesheet
-	cnv_panel
+        cnv_panel
 
     main:
 
