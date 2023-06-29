@@ -30,10 +30,10 @@ if (params.exome) {
     if (params.panel) {
         panel = params.genomes[params.assembly].panels[params.panel].intervals
         ch_panels = Channel.from( [ params.panel, file(panel, checkIfExists: true) ] )
-	} else if (params.panel_intervals) {
+    } else if (params.panel_intervals) {
         Channel.from([ "Custom",file(params.panel_intervals,checkIfExists: true)])
         .set { ch_panels }
-	} else if (params.all_panels) {
+    } else if (params.all_panels) {
         panel_list = []
         panel_names = params.genomes[params.assembly].panels.keySet()
         panel_names.each {
@@ -41,7 +41,7 @@ if (params.exome) {
             panel_list << [ it,file(interval) ]
         }
         ch_panels = Channel.fromList(panel_list)
-	} else {
+    } else {
         ch_panels = Channel.from([])
     }
 
@@ -51,13 +51,13 @@ if (params.exome) {
     params.out_format = "cram"
     params.out_index = "crai"
 
-	bed_file = params.bed ?: params.genomes[params.assembly].bed
+    bed_file = params.bed ?: params.genomes[params.assembly].bed
     ch_bed = Channel.fromPath(bed_file)
 
-	ch_targets = Channel.empty()
-	ch_baits = Channel.empty()
+    ch_targets = Channel.empty()
+    ch_baits = Channel.empty()
 
-	ch_cnv_panel = Channel.from([])
+    ch_cnv_panel = Channel.from([])
 } 
 
 if (params.expansion_hunter ) {  params.expansion_json = params.genomes[params.assembly].expansion_catalog } else {  params.expansion_json = null }
@@ -95,7 +95,7 @@ include { FASTQC } from "./../modules/fastqc"
 ch_samplesheet = Channel.fromPath(params.samples, checkIfExists: true)
 
 ch_ref = Channel.fromPath( [ file(params.ref), file(params.ref + ".fai") ] )
-	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
+    .ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
 
 ch_qc = Channel.from([])
 
@@ -192,7 +192,7 @@ workflow DRAGEN_VARIANT_CALLING {
         }
 
         // QC Metrics
-        if (params.exome) {	
+        if (params.exome) {    
 
             EXOME_QC(
                 bam,

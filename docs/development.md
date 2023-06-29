@@ -1,12 +1,13 @@
 # Development guide
 
+This is a list of helpful pointers to aid in the development of this pipeline. It includes information about the code base as well as the common workflows needed to e.g. roll out new releases or add new references/assets. 
 # Overview
 
 [The code](#the-code)
 
 [The workflow](#understanding-the-workflow)
 
-[ Release checklist](#release-checklist)
+[Release checklist](#release-checklist)
 
 [Gene Panels](#adding-new-gene-panels)
 
@@ -63,6 +64,7 @@ If VEP is updated, this necessitates the following changes:
 - install the matching local VEP references and plugins - as defined in the site-specific config [file](../conf/diagnostic.config)
   - Download the VEP references from the EnsEMBL [FTP](https://ftp.ensembl.org/pub/release-109/variation/vep/) server and unpack them in the folder specified in the site-specific config
   - Clone the EnsEMBL VEP [plugins](https://github.com/Ensembl/VEP_plugins) repo into the folder specified in the site-specific config and check out the appropriate version
+- Add parsing capabilities for any new VEP annotations to the Alissa conversion [script)(../bin/vep2allisa.pl)
 
 ## Updating exome kit(s)
 
@@ -107,6 +109,15 @@ Please note that the perl script requires a working installation of the [EnsEMBL
 
 5) Compute reference coverages for this panel
 
+Reference coverages are configured for each panel - see [resources.config](../conf/resources.config). These files (.coverages.txt) include information on the mean coverage for each target in a given panel, across a large number of previously sequenced samples (> 100). 
+
+The column structure looks as follows (note that the header column is not included in the actual file):
+
+| target | mean coverage | coverage sample 1 | coverage sample 2 | coverage sample n |
+| ------ | ------------- | ----------------- | ----------------- | ----------------- |
+| ISG15.ENST00000649529.1 | 89.94642857142857 | 129.0 | 104.0 | 68.5 |
+
+The values are taken from Picard target metrics, using the tool [CollectHsMetrics](../modules/picard/collect_hs_metrics.nf). A ruby [script](../bin/util/picard_sum_target_coverages.rb) is included that parses a list of such metrics from a folder and combines them into the coverages.txt format required by this pipeline.
 
 # Creating CNV panels
 
