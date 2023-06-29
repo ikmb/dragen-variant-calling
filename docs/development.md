@@ -54,9 +54,20 @@ Below follow some general points to be mindful of when updating the pipeline and
 As a general comment, do not change any of the locally "installed" files and their paths, ever. The point of a versioned pipeline is that we should always be able to go back to an old version.
 Since not all parts of this pipeline can be included in this code base and must live on the cluster itself, these files should not be touched in any way!!
 
+# Updating software environment and Docker container
+
+This pipeline provisions software packages via Docker containers. These are hard-coded into each [module](../modules/). For most things, we use containers from [Bioconda](https://bioconda.github.io/). However, for the analysis of panel metrics, a pipeline-specific container is built on every push, merge and release of this pipeline using github [workflows](../.github/workflows). 
+
+For releases specifically, please make sure that you
+
+- Update the release version in [nextflow.config](../nextflow.config)
+- Update the name of the container in [nextflow.config](../nextflow.config)
+- Update the name of the container in [collect_hs_metrics_panels.nf](../modules/picard/collect_hs_metrics_panel.nf)
+
+The version in the container name will correspond to the release you are about to create in github - so something like `1.1`or similar. 
 ## Updating VEP version
 
-If VEP is updated, this necessitates the following changes:
+If VEP is updated (und thus the version of EnsEMBL used as the basis for gene models), this necessitates the following changes:
 
 - re-computing all [gene panels](#adding-new-gene-panels), starting from the gene lists under [gene_lists](../assets/panels/gene_lists)
   - all panel reference coverages, for at least 100 BAM files that have been aligned with the to-be-used version of Dragen
@@ -64,7 +75,7 @@ If VEP is updated, this necessitates the following changes:
 - install the matching local VEP references and plugins - as defined in the site-specific config [file](../conf/diagnostic.config)
   - Download the VEP references from the EnsEMBL [FTP](https://ftp.ensembl.org/pub/release-109/variation/vep/) server and unpack them in the folder specified in the site-specific config
   - Clone the EnsEMBL VEP [plugins](https://github.com/Ensembl/VEP_plugins) repo into the folder specified in the site-specific config and check out the appropriate version
-- Add parsing capabilities for any new VEP annotations to the Alissa conversion [script)(../bin/vep2allisa.pl)
+- Add parsing capabilities for any new VEP annotations to the Alissa conversion [script](../bin/vep2allisa.pl)
 
 ## Updating exome kit(s)
 
@@ -98,6 +109,8 @@ perl ensembl_panel2bed.pl --infile gene_lists/my_gene_list.txt > hg38/my_gene_li
 
 Note that the pipeline will throw an error if one of your genes was not found. This most likely means that you used a name that is not HGNC compliant. Try searching HGNC and/or EnsEMBL for the correct spelling/name.
 
+Please also note that the perl script requires a working installation of the [EnsEMBL API](https://www.ensembl.org/info/docs/api/api_installation.html) to be installed in version 109. You can do this in e.g. a conda environment or directly on the system. Trying to containerize this has sadly not been successful.
+
 3) Convert the BED file into a picard-style interval list using picard tools (picard BedToIntervalList) and store both the bed file and the interval list in the subfolder `assets/panels/hg38`
 
 ```bash
@@ -106,11 +119,13 @@ picard BedToIntervalList I=my_gene_list.bed O=my_gene_list.interval_list SD=/wor
 
 4) Add the new panel to the resource config file in `conf/resources.config` 
 
-Please note that the perl script requires a working installation of the [EnsEMBL API](https://www.ensembl.org/info/docs/api/api_installation.html) to be installed in version 109. You can do this in e.g. a conda environment or directly on the system. Trying to containerize this has sadly not been successful.
+...and update the documentation.
 
-5) Compute reference coverages for this panel
+5) Compute reference coverages for this panel and exome kit combination
 
-Reference coverages are configured for each panel - see [resources.config](../conf/resources.config). These files (.coverages.txt) include information on the mean coverage for each target in a given panel, across a large number of previously sequenced samples (> 100). 
+Reference coverages are configured for each panel - see [resources.config](../conf/resources.config). Obviously, these coverages are not only dependent on the panel, but also the exome kit used. So you need to run this multiple times if you are actively maintaining multiple exome kits in this code base.
+
+These files (.coverages.txt) include information on the mean coverage for each target in a given panel, across a large number of previously sequenced samples (> 100). 
 
 The column structure looks as follows (note that the header column is not included in the actual file):
 

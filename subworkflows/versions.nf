@@ -2,12 +2,12 @@ include { DRAGEN_VERSION ; SOFTWARE_VERSIONS } from "./../modules/logging/main.n
 
 workflow VERSIONS {
 
-	main:
-		DRAGEN_VERSION()
-		SOFTWARE_VERSIONS(
+    main:
+        DRAGEN_VERSION()
+        SOFTWARE_VERSIONS(
             DRAGEN_VERSION.out.collect()
-        )	
+        )    
 
-	emit:
-		yaml = SOFTWARE_VERSIONS.out.yaml
+    emit:
+        yaml = SOFTWARE_VERSIONS.out.yaml
 }

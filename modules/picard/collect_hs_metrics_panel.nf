@@ -1,6 +1,6 @@
 process PICARD_COLLECT_HS_METRICS_PANEL {
 
-    container 'ikmb/dragen-variant-calling:1.0'
+    container 'ikmb/dragen-variant-calling:1.1'
 
     tag "${meta.sample_id}|${panel_name}"
 
@@ -23,7 +23,7 @@ process PICARD_COLLECT_HS_METRICS_PANEL {
     // optionally support a kill list of known bad exons
     def options = ""
     def cov = ""
-    if (if params.kit && params.genomes[params.assembly].panels[panel_name].coverages[params.kit]) {
+    if (params.kit && params.genomes[params.assembly].panels[panel_name].coverages[params.kit]) {
         cov = file(params.genomes[params.assembly].panels[panel_name].coverages[params.kit])
         options = "--ref ${cov}"
     }
