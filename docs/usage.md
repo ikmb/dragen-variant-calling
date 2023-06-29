@@ -5,7 +5,7 @@
 A basic command to execute the pipeline will look as follows:
 
 ```bash
-nextflow run ikmb/dragen-variant-calling --samples Samples.csv --assembly hg38 --exome --kit xGen_v2
+nextflow run ikmb/dragen-variant-calling --samples Samples.csv --exome --kit xGen_v2
 ```
 
 Information on the command line options are listed in the following:
@@ -50,15 +50,12 @@ famID,indivID,RGID,RGSM,RGLB,Lane,Read1File,Read2File,PaternalID,MaternalID,Sex,
 FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R1_001.fastq.gz,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R2_001.fastq.gz,0,0,other,0
 ```
 
-If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lane libaries. The samplesheet generator script should take care of this, usually. 
+If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lane libraries. The samplesheet generator script should take care of this, usually. 
 
 Please note that the names of the final files will use the value you have entered for `RGSM` (sample ID) as their root name. The folder structure users the pattern `indivID/RGSM/RGSM_results`. 
 
 ### `--email` [ false (default) | me@somewhere.org ]
 Have the pipeline send a report upon completion to this email adress. 
-
-### `--assembly` [ hg38 (default), hg19 ] 
-The mapping reference to be used by Dragen. We have two ALT aware versions available - hg38 with haplotypes and decoys (hg38HD) as well as hg19 (came with Dragen). 
 
 ### `--exome`
 Specify that this is an exome analysis - requires '--kit' as well. 
@@ -82,15 +79,14 @@ supports the following panels:
 - Non-Compaction Kardiomyopathie [cardio_non_compaction]
 - Pulmonale Hypertonie 2021 [cardio_pah_2021]
 - Gene Immundefekt AGG Exom 2022 [immundef_agg_exom_2022]
-- Gene Immundefekt eoIBD 2022 [immundef_eoibd_exom_2022]
+- Gene Immundefekt eoIBD 2023 [immundef_eoibd_exom_2023]
 - Gene Immundefekt HGG 2022 [immundef_hgg_exom_2022]
-- Gene Immundefekt Agammaglobulinämie (25kb panel) [IMM_AGG]
-- Gene Immundefekt Hypogammaglobulinämie (25kb panel) [IMM_HGG]
-- Gene Immundefekt großes Panel [IMM]
-- Gene Immundefekt intestinal (25kb panel) [IMM_IBD]
-- Breast cancer panel [ breast_cancer ]
-- Liver disease [ Liver ]
-- Intellectual disability [ Intellectual_disability ]
+- Gene Immundefekt Agammaglobulinämie 2022 [immundef_agg_exom_2022]
+- Gene Immundefekt Hypogammaglobulinämie 2022 [immundef_hgg_exom_2022]
+- Gene Immundefekt großes Panel 2023 [immundef_komplett_exom_2023]
+- Breast cancer panel [breast_cancer]
+- Liver disease [Liver]
+- Intellectual disability [Intellectual_disability]
 
 Please note that this will also create additional run metrics, including a per-sample list of target exons that fall below a minimum sequence coverage.
 
@@ -125,8 +121,8 @@ recommended to configure a curated panel of normals. This currently only exists 
 ###  `--sv` [ true | false (default) ]
 Enable structural variant calling. This is only recommended for WGS data.
 
-### `--ml` [ true (default) | false ]
-Use ML filter instead of built-in hard filtering only. Only available for hg38. 
+### `--no_ml` [ true (default) | false ]
+Disable the default ML variant filter.
 
 ## Expert options
 

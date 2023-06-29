@@ -40,10 +40,14 @@ foreach my $line (<SAMPLES>) {
 	my @elements = split "," , $line ;
 	my $file = @elements[-6];
 	my $fpath = (split "/", $file)[-1];
+
 	if (defined $set{ $fpath }) {
+
 		my ($famid,$individ,$rgid,$rgsm,$rglb,$lane,$left,$right,$patid,$matid,$sex,$pheno) = @elements;
+
                 $left = (split "/" , $left)[-1] ;
                 $right = (split "/", $right)[-1] ;
+
 		printf $rgid . "," . $rgsm . "," . $rglb . "," . $lane . "," . $left . "," . $right . "\n";
 	}
 }

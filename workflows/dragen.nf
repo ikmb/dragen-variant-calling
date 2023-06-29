@@ -2,6 +2,7 @@
 // Pipeline options and settings
 // ******************************
 
+// Requested analysis is for exomes
 if (params.exome) {
 
     params.out_format = "bam"
@@ -17,18 +18,22 @@ if (params.exome) {
         file(baits, checkIfExists: true)
     )
 
-	if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
-		params.cnv_panel = params.genomes[params.assembly].kits[params.kit].cnv_panel
-	}
+    if (params.cnv_panel) {
+        ch_cnv_panel = Channel.fromPath(params.cnv_panel, checkIfExists: true).collect()
+    } else if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
+        ch_cnv_panel = Channel.fromPath(params.genomes[params.assembly].kits[params.kit].cnv_panel).collect()
+    } else {
+        ch_cnv_panel = Channel.value([])
+    }
 
-	// Specific target panels
-	if (params.panel) {
+    // Specific target panels
+    if (params.panel) {
         panel = params.genomes[params.assembly].panels[params.panel].intervals
         ch_panels = Channel.from( [ params.panel, file(panel, checkIfExists: true) ] )
-	} else if (params.panel_intervals) {
+    } else if (params.panel_intervals) {
         Channel.from([ "Custom",file(params.panel_intervals,checkIfExists: true)])
         .set { ch_panels }
-	} else if (params.all_panels) {
+    } else if (params.all_panels) {
         panel_list = []
         panel_names = params.genomes[params.assembly].panels.keySet()
         panel_names.each {
@@ -36,28 +41,30 @@ if (params.exome) {
             panel_list << [ it,file(interval) ]
         }
         ch_panels = Channel.fromList(panel_list)
-	} else {
+    } else {
         ch_panels = Channel.from([])
     }
 
+// analysis if for genomes
 } else {
 
     params.out_format = "cram"
     params.out_index = "crai"
 
-	bed_file = params.bed ?: params.genomes[params.assembly].bed
+    bed_file = params.bed ?: params.genomes[params.assembly].bed
     ch_bed = Channel.fromPath(bed_file)
 
-	ch_targets = Channel.empty()
-	ch_baits = Channel.empty()
+    ch_targets = Channel.empty()
+    ch_baits = Channel.empty()
 
-	ch_cnv_panel = Channel.from([])
+    ch_cnv_panel = Channel.from([])
 } 
 
 if (params.expansion_hunter ) {  params.expansion_json = params.genomes[params.assembly].expansion_catalog } else {  params.expansion_json = null }
 
 ch_id_check_bed = Channel.fromPath(file(params.genomes[ params.assembly ].qc_bed, checkIfExists: true))
 multiqc_config = Channel.fromPath(file("${baseDir}/conf/multiqc_config.yaml", checkIfExists: true))
+
 if (params.genomes[params.assembly].ml_dir) { params.ml_dir = params.genomes[params.assembly].ml_dir } else { params.ml_dir = null }
 
 // ******************************
@@ -85,10 +92,10 @@ include { FASTQC } from "./../modules/fastqc"
 // Pipeline input(s)
 // ************************************************
 
-ch_samplesheet = Channel.fromPath(params.samples)
+ch_samplesheet = Channel.fromPath(params.samples, checkIfExists: true)
 
 ch_ref = Channel.fromPath( [ file(params.ref), file(params.ref + ".fai") ] )
-	.ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
+    .ifEmpty { exit 1; "Ref fasta file not found, exiting..." }
 
 ch_qc = Channel.from([])
 
@@ -119,7 +126,7 @@ workflow DRAGEN_VARIANT_CALLING {
             ch_bed_intervals = ch_bed
         }
 
-        // Read-QC prior to trimming
+        // Read-QC prior
         FASTQC(
             ch_reads   
         )
@@ -130,7 +137,8 @@ workflow DRAGEN_VARIANT_CALLING {
             DRAGEN_JOINT_CALLING(
                 ch_reads,
                 ch_bed_intervals,
-                ch_samples
+                ch_samples,
+                ch_cnv_panel
             )
 
             vcf         = DRAGEN_JOINT_CALLING.out.vcf
@@ -146,7 +154,8 @@ workflow DRAGEN_VARIANT_CALLING {
             DRAGEN_TRIO_CALLING(
                 ch_reads,
                 ch_bed_intervals,
-                ch_samples
+                ch_samples,
+                ch_cnv_panel
             )
 
             vcf         = DRAGEN_TRIO_CALLING.out.vcf
@@ -160,9 +169,10 @@ workflow DRAGEN_VARIANT_CALLING {
         } else {
 
             DRAGEN_SINGLE_SAMPLE(
-                ch_eads,
+                ch_reads,
                 ch_bed_intervals,
-                ch_samples
+                ch_samples,
+                ch_cnv_panel
             )
 
             vcf_sample  = DRAGEN_SINGLE_SAMPLE.out.vcf
@@ -182,7 +192,7 @@ workflow DRAGEN_VARIANT_CALLING {
         }
 
         // QC Metrics
-        if (params.exome) {	
+        if (params.exome) {    
 
             EXOME_QC(
                 bam,
@@ -236,7 +246,6 @@ workflow DRAGEN_VARIANT_CALLING {
             ch_qc.collect(),
             multiqc_config.collect()
         )
-
 
     emit:
     qc = MULTIQC.out.html

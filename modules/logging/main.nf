@@ -1,57 +1,57 @@
 process DRAGEN_VERSION {
 
-	publishDir "${params.outdir}/DragenLogs/", mode: 'copy'
+    publishDir "${params.outdir}/DragenLogs/", mode: 'copy'
 
-	label 'dragen'
+    label 'dragen'
 
-	output:
-	path(dragen_log)
+    output:
+    path(dragen_log)
 
-	script:
-	dragen_log = "v_dragen.txt"
+    script:
+    dragen_log = "v_dragen.txt"
 
-	"""
-		/opt/edico/bin/dragen -V &> $dragen_log
-	"""
+    """
+        /opt/edico/bin/dragen -V &> $dragen_log
+    """
 }
 
 process DRAGEN_USAGE {
 
-	publishDir "${params.outdir}/DragenLogs/", mode: 'copy'
+    publishDir "${params.outdir}/DragenLogs/", mode: 'copy'
 
-	input:
-	path(logs)
+    input:
+    path(logs)
 
-	output:
-	path(yaml), emit: yaml
+    output:
+    path(yaml), emit: yaml
 
-	script:
-	yaml = "dragen_usage_mqc.yaml"
+    script:
+    yaml = "dragen_usage_mqc.yaml"
 
-	"""
-		dragen_usage.pl -u $params.dragen_unit_cost > $yaml
-	"""
+    """
+        dragen_usage.pl -u $params.dragen_unit_cost > $yaml
+    """
 
 }
 
 process SOFTWARE_VERSIONS {
 
-	publishDir "${params.outdir}/Summary/versions", mode: 'copy'
+    publishDir "${params.outdir}/Summary/versions", mode: 'copy'
 
-	input:
-	path('*')
+    input:
+    path('*')
 
-	output:
-	path(yaml_file), emit: yaml
-	path("v*.txt")
+    output:
+    path(yaml_file), emit: yaml
+    path("v*.txt")
 
-	script:
-	yaml_file = "software_versions_mqc.yaml"
+    script:
+    yaml_file = "software_versions_mqc.yaml"
 
-	"""
-		echo $workflow.manifest.version &> v_ikmb_dragen_variant_calling.txt
-		echo $workflow.nextflow.version &> v_nextflow.txt
-		parse_versions.pl >  $yaml_file
-	"""
+    """
+        echo $workflow.manifest.version &> v_ikmb_dragen_variant_calling.txt
+        echo $workflow.nextflow.version &> v_nextflow.txt
+        parse_versions.pl >  $yaml_file
+    """
 
 }

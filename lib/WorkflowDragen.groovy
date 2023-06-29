@@ -24,6 +24,16 @@ class WorkflowDragen {
             System.exit(1)
         }
 
+        if (params.exome && !params.kit && !params.targets) {
+            log.info "Exome analysis requires either a pre-configured --kit or --targets and --baits"
+            System.exit(1)
+        }
+
+        if (params.targets && !params.baits || !params.targets && params.baits) {
+            log.info "If you provide custom calling regions, you have to specify both --targets and --baits!"
+            System.exit(1)
+        }
+        
         if (!params.assembly) {
             log.info "Must provide an assembly name (--assembly)"
             System.exit(1)
