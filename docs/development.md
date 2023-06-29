@@ -50,17 +50,36 @@ In brief:
 
 Below follow some general points to be mindful of when updating the pipeline and drafting a new release. 
 
+As a general comment, do not change any of the locally "installed" files and their paths, ever. The point of a versioned pipeline is that we should always be able to go back to an old version.
+Since not all parts of this pipeline can be included in this code base and must live on the cluster itself, these files should not be touched in any way!!
+
 ## Updating VEP version
 
 If VEP is updated, this necessitates the following changes:
 
-- re-computing all gene panels, starting from the gene lists under [gene_lists](../assets/panels/gene_lists)
+- re-computing all [gene panels](#adding-new-gene-panels), starting from the gene lists under [gene_lists](../assets/panels/gene_lists)
   - all panel reference coverages, for at least 100 BAM files that have been aligned with the to-be-used version of Dragen
-- the VEP [module](../modules/vep.nf) to reflect any necessary syntax changes (if any)
-- the local VEP references and plugins - as defined in the site-specific config [file](../conf/diagnostic.config)
+- update the VEP [module](../modules/vep.nf) to reflect any necessary syntax changes (if any)
+- install the matching local VEP references and plugins - as defined in the site-specific config [file](../conf/diagnostic.config)
+  - Download the VEP references from the EnsEMBL [FTP](https://ftp.ensembl.org/pub/release-109/variation/vep/) server and unpack them in the folder specified in the site-specific config
+  - Clone the EnsEMBL VEP [plugins](https://github.com/Ensembl/VEP_plugins) repo into the folder specified in the site-specific config and check out the appropriate version
 
 ## Updating exome kit(s)
 
+If you have added a new exome kit, or god forbid, changed an existing one, the following things need to be checked/updated:
+
+- Generate the target BED file as well as a bait and target interval list
+  - These files must be 'unpadded', meaning any padding to these regions are added by the pipeline later on
+- If needed, compute a new CNV reference panel for this kit (based on data generated with the kit beforehand!)
+- Update the [usage](usage.md) documentation to information user about the new kit and its name
+
+## Updating Dragen version
+
+Well, this is not gonna be fun ...
+
+- Update all panel reference coverages
+- Generate new CNV reference panels (for all relevant kits, using raw data generated with said kit and aligned using the new version of Dragen)
+- Perform validation of resulting variant calls against genome-in-a-bottle
 
 # Adding new gene panels
 
@@ -85,6 +104,10 @@ picard BedToIntervalList I=my_gene_list.bed O=my_gene_list.interval_list SD=/wor
 4) Add the new panel to the resource config file in `conf/resources.config` 
 
 Please note that the perl script requires a working installation of the [EnsEMBL API](https://www.ensembl.org/info/docs/api/api_installation.html) to be installed in version 109. You can do this in e.g. a conda environment or directly on the system. Trying to containerize this has sadly not been successful.
+
+5) Compute reference coverages for this panel
+
+
 # Creating CNV panels
 
 CNV panels must be re-computed if any of the following components are changed:
