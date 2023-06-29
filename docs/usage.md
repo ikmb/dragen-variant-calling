@@ -50,7 +50,7 @@ famID,indivID,RGID,RGSM,RGLB,Lane,Read1File,Read2File,PaternalID,MaternalID,Sex,
 FAM1,I33977-L2,HHNVKDRXX.2.I33977-L2,I33977-L2,I33977-L2,2,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R1_001.fastq.gz,/work_ifs/sukmb352/projects/exomes/SF_Exome-Val_IDTv2_01/data/I33977-L2_S59_L002_R2_001.fastq.gz,0,0,other,0
 ```
 
-If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lane libaries. The samplesheet generator script should take care of this, usually. 
+If your libraries were sequenced across multiple lanes, specify this via the Lane column. The pipeline will correctly group multi-lane libraries. The samplesheet generator script should take care of this, usually. 
 
 Please note that the names of the final files will use the value you have entered for `RGSM` (sample ID) as their root name. The folder structure users the pattern `indivID/RGSM/RGSM_results`. 
 
@@ -84,9 +84,9 @@ supports the following panels:
 - Gene Immundefekt Agammaglobulinämie 2022 [immundef_agg_exom_2022]
 - Gene Immundefekt Hypogammaglobulinämie 2022 [immundef_hgg_exom_2022]
 - Gene Immundefekt großes Panel 2023 [immundef_komplett_exom_2023]
-- Breast cancer panel [ breast_cancer ]
-- Liver disease [ Liver ]
-- Intellectual disability [ Intellectual_disability ]
+- Breast cancer panel [breast_cancer]
+- Liver disease [Liver]
+- Intellectual disability [Intellectual_disability]
 
 Please note that this will also create additional run metrics, including a per-sample list of target exons that fall below a minimum sequence coverage.
 

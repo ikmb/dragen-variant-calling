@@ -73,14 +73,15 @@ If you have added a new exome kit, or god forbid, changed an existing one, the f
 - Generate the target BED file as well as a bait and target interval list
   - These files must be 'unpadded', meaning any padding to these regions are added by the pipeline later on
 - If needed, compute a new CNV reference panel for this kit (based on data generated with the kit beforehand!)
-- Update the [usage](usage.md) documentation to information user about the new kit and its name
+- Update the [usage](usage.md) documentation to inform users about the new kit and its name
 
 ## Updating Dragen version
 
-Well, this is not gonna be fun ...
+Well, this is not gonna be fun, because this has very far-reaching implications for various parts of the pipeline....
 
-- Update all panel reference coverages
-- Generate new CNV reference panels (for all relevant kits, using raw data generated with said kit and aligned using the new version of Dragen)
+- Run 100+ samples through the core workflow to produce new BAM files
+  - Update all panel [reference coverages](#adding-new-gene-panels)
+  - Generate a new [CNV reference panel](#creating-cnv-panels) for all relevant kits (probably only xGenv2)
 - Perform validation of resulting variant calls against genome-in-a-bottle
 
 # Adding new gene panels
@@ -117,7 +118,9 @@ The column structure looks as follows (note that the header column is not includ
 | ------ | ------------- | ----------------- | ----------------- | ----------------- |
 | ISG15.ENST00000649529.1 | 89.94642857142857 | 129.0 | 104.0 | 68.5 |
 
-The values are taken from Picard target metrics, using the tool [CollectHsMetrics](../modules/picard/collect_hs_metrics.nf). A ruby [script](../bin/util/picard_sum_target_coverages.rb) is included that parses a list of such metrics from a folder and combines them into the coverages.txt format required by this pipeline.
+The values are taken from Picard target metrics, using the tool [CollectHsMetrics](../modules/picard/collect_hs_metrics.nf). A terribly simplistic ruby [script](../bin/util/picard_sum_target_coverages.rb) is included that parses a list of such metrics from a folder and combines them into the coverages.txt format required by this pipeline.
+
+Data from such files are [used](../modules/picard/collect_hs_metrics_panel.nf) to annotate gaps in target coverages with meaningful reference values.
 
 # Creating CNV panels
 

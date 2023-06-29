@@ -1,14 +1,14 @@
 process PICARD_COLLECT_HS_METRICS_PANEL {
 
-	container 'ikmb/dragen-variant-calling:1.0'
+    container 'ikmb/dragen-variant-calling:1.0'
 
-	tag "${meta.sample_id}|${panel_name}"
+    tag "${meta.sample_id}|${panel_name}"
 
     publishDir "${params.outdir}/Summary/Panel/PanelCoverage", mode: "copy"
 
     input:
     tuple val(meta),path(bam),path(bai),val(panel_name),path(panel)
-	path(targets)
+    path(targets)
 
     output:
     tuple val(panel_name),path(coverage), emit: coverage
@@ -22,11 +22,11 @@ process PICARD_COLLECT_HS_METRICS_PANEL {
 
     // optionally support a kill list of known bad exons
     def options = ""
-	def cov = ""
-	if (params.genomes[params.assembly].panels[panel_name].coverages) {
-		cov = file(params.genomes[params.assembly].panels[panel_name].coverages)
-		options = "--ref ${cov}"
-	}
+    def cov = ""
+    if (if params.kit && params.genomes[params.assembly].panels[panel_name].coverages[params.kit]) {
+        cov = file(params.genomes[params.assembly].panels[panel_name].coverages[params.kit])
+        options = "--ref ${cov}"
+    }
     // do something here - get coverage and build an XLS sheet
     // First we identify which analysed exons are actually part of the exome kit target definition.
     """
