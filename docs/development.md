@@ -54,7 +54,7 @@ Below follow some general points to be mindful of when updating the pipeline and
 As a general comment, do not change any of the locally "installed" files and their paths, ever. The point of a versioned pipeline is that we should always be able to go back to an old version.
 Since not all parts of this pipeline can be included in this code base and must live on the cluster itself, these files should not be touched in any way!!
 
-# Updating software environment and Docker container
+## Updating software environment and Docker container
 
 This pipeline provisions software packages via Docker containers. These are hard-coded into each [module](../modules/). For most things, we use containers from [Bioconda](https://bioconda.github.io/). However, for the analysis of panel metrics, a pipeline-specific container is built on every push, merge and release of this pipeline using github [workflows](../.github/workflows). 
 
