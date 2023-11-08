@@ -10,15 +10,15 @@ workflow PANEL_QC {
 
 	main:
 
-		PICARD_COLLECT_HS_METRICS_PANEL(
+        PICARD_COLLECT_HS_METRICS_PANEL(
             bam.combine(panels),
             targets.collect()
         )
-		MULTIQC_PANEL(
-			PICARD_COLLECT_HS_METRICS_PANEL.out.coverage.groupTuple()
-		)
+        MULTIQC_PANEL(
+            PICARD_COLLECT_HS_METRICS_PANEL.out.coverage.groupTuple()
+        )
 	
 	emit:
-		qc = MULTIQC_PANEL.out.html
+        qc = MULTIQC_PANEL.out.html
 
 }

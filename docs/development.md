@@ -13,6 +13,8 @@ This is a list of helpful pointers to aid in the development of this pipeline. I
 
 [CNV panel of normals](#creating-cnv-panels)
 
+[Future To Dos](#todo)
+
 # The code
 
 This pipelines uses Nextflow [DSL2](https://www.nextflow.io/docs/latest/dsl2.html) code conventions. The general structure can be broken down as follows:
@@ -171,4 +173,14 @@ The panel-of-normals can now be provided as a text file listing the full path to
 ## Caveats
 
 This pipeline is strictly version controlled; this includes (most of) the reference that are used. Please note therefore that updates you make to the panel-of-normals exists only from the point forward at which it was introduced into the code base. You will not be able run an older version of the pipeline on new data with your updated panel-of-normals being used automatically. In such a scenario, you must provide your PoN via the command line option `--cnv_panel` - although you may still run into the issue that the version of the Dragen or its references are then mismatched to your PoN. 
+
+# To Dos
+
+Obviously, this pipeline is always a work in progress, because regulations and technologies are updated and changed all the time. At the time of writing, these are some suggestions on what to work on next:
+
+- Add support for panel-based QC to the WGS workflow (right now this is only done for exome data)
+- Update all modules to self-report the version(s) of the tools used (see [github template](https://github.com/ikmb/nf-template) and specifically the [fastp](https://github.com/ikmb/nf-template/blob/TEMPLATE/modules/fastp/main.nf) module as an example). 
+- Update to a new Dragen version (some major improvements were made in > 4.0) - yes, this will be a ton of work. 
+
+
 

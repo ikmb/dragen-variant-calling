@@ -71,22 +71,22 @@ if (params.genomes[params.assembly].ml_dir) { params.ml_dir = params.genomes[par
 // Subworkflows and modules
 // ******************************
 
-include { WGS_QC } from "./../subworkflows/wgs_qc"
-include { EXOME_QC } from "./../subworkflows/exome_qc"
-include { DRAGEN_SINGLE_SAMPLE } from "./../subworkflows/dragen/single_sample"
-include { DRAGEN_TRIO_CALLING } from "./../subworkflows/dragen/trio_calling"
-include { DRAGEN_JOINT_CALLING } from "./../subworkflows/dragen/joint_calling"
-include { WHATSHAP } from "./../modules/whatshap"
-include { VEP_ANNOTATE } from "./../subworkflows/vep_annotate"
+include { WGS_QC }                  from "./../subworkflows/wgs_qc"
+include { EXOME_QC }                from "./../subworkflows/exome_qc"
+include { DRAGEN_SINGLE_SAMPLE }    from "./../subworkflows/dragen/single_sample"
+include { DRAGEN_TRIO_CALLING }     from "./../subworkflows/dragen/trio_calling"
+include { DRAGEN_JOINT_CALLING }    from "./../subworkflows/dragen/joint_calling"
+include { WHATSHAP }                from "./../modules/whatshap"
+include { VEP_ANNOTATE }            from "./../subworkflows/vep_annotate"
 include { PICARD_INTERVAL_LIST_TO_BED } from "./../modules/picard/interval_list_to_bed"
-include { BCFTOOLS_STATS } from "./../modules/bcftools/stats"
-include { VALIDATE_SAMPLESHEET } from "./../modules/validate_samplesheet"
+include { BCFTOOLS_STATS }          from "./../modules/bcftools/stats"
+include { VALIDATE_SAMPLESHEET }    from "./../modules/validate_samplesheet"
 include { MULTIQC; MULTIQC_FASTQC } from "./../modules/multiqc/main.nf"
-include { DRAGEN_USAGE } from "./../modules/logging/main.nf"
-include { VERSIONS } from "./../subworkflows/versions"
-include { PANEL_QC } from "./../subworkflows/panel_qc"
-include { ID_CHECK } from "./../subworkflows/id_check"
-include { FASTQC } from "./../modules/fastqc"
+include { DRAGEN_USAGE }            from "./../modules/logging/main.nf"
+include { VERSIONS }                from "./../subworkflows/versions"
+include { PANEL_QC }                from "./../subworkflows/panel_qc"
+include { ID_CHECK }                from "./../subworkflows/id_check"
+include { FASTQC }                  from "./../modules/fastqc"
 
 // ************************************************
 // Pipeline input(s)

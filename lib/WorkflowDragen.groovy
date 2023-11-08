@@ -44,6 +44,15 @@ class WorkflowDragen {
             System.exit(1)
         }
 
+        if (params.targets && params.baits && params.targets == params.baits ) {
+            log.info "Target and Bait file must not have the same name!"
+            System.exit(1)
+        }
+
+        if (params.interval_padding && params.interval_padding != 15) {
+            log.info "Running with interval padding other than 15 (${params.interval_padding}) - please note that this conflicts with current regulations!"
+        }
+
     }
 
 }
