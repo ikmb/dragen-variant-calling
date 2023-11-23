@@ -23,8 +23,8 @@ workflow DRAGEN_SINGLE_SAMPLE {
                 new_meta.sample_id = m.sample_id
                 tuple(new_meta,l,r)
             }.groupTuple(),
-            bed.collect(),
-            samplesheet.collect(),
+            bed,
+            samplesheet,
 	    cnv_panel
         )
 

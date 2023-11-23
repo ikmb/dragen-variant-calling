@@ -23,7 +23,7 @@ if (params.exome) {
     } else if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
         ch_cnv_panel = Channel.fromPath(params.genomes[params.assembly].kits[params.kit].cnv_panel).collect()
     } else {
-        ch_cnv_panel = Channel.value([])
+        ch_cnv_panel = Channel.value([]).collect()
     }
 
     // Specific target panels
@@ -52,12 +52,12 @@ if (params.exome) {
     params.out_index = "crai"
 
     bed_file = params.bed ?: params.genomes[params.assembly].bed
-    ch_bed = Channel.fromPath(bed_file)
+    ch_bed = Channel.fromPath(file(bed_file, checkIfExists: true)).collect()
 
     ch_targets = Channel.empty()
     ch_baits = Channel.empty()
 
-    ch_cnv_panel = Channel.from([])
+    ch_cnv_panel = Channel.value([])
 } 
 
 if (params.expansion_hunter ) {  params.expansion_json = params.genomes[params.assembly].expansion_catalog } else {  params.expansion_json = null }
@@ -117,13 +117,13 @@ workflow DRAGEN_VARIANT_CALLING {
         ch_samples
             .splitCsv ( header: true, sep: ',')
             .map { create_fastq_channel(it) }
-            .set { ch_reads }        
+            .set { ch_reads }
             
         if (params.exome) {
             PICARD_INTERVAL_LIST_TO_BED(ch_targets)
-            ch_bed_intervals = PICARD_INTERVAL_LIST_TO_BED.out.bed
+            ch_bed_intervals = PICARD_INTERVAL_LIST_TO_BED.out.bed.collect()
         } else {
-            ch_bed_intervals = ch_bed
+            ch_bed_intervals = ch_bed.collect()
         }
 
         // Read-QC prior
