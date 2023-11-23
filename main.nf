@@ -71,6 +71,7 @@ workflow.onComplete {
         email_fields['Pipeline script hash ID'] = workflow.scriptId
         email_fields['manifest'] = workflow.manifest
         email_fields['summary'] = summary
+        email_fields['intervalPadding'] = params.interval_padding
 
         email_info = ""
         for (s in email_fields) {

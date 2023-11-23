@@ -22,10 +22,20 @@ process PICARD_COLLECT_HS_METRICS_PANEL {
 
     // optionally support a kill list of known bad exons
     def options = ""
+    def merge_options = ""
     def cov = ""
-    if (params.kit && params.genomes[params.assembly].panels[panel_name].coverages[params.kit]) {
-        cov = file(params.genomes[params.assembly].panels[panel_name].coverages[params.kit])
-        options = "--ref ${cov}"
+    // We have pre-computed panel coverages for non-padded panels and for a padding value of 15 - check which one to use
+    if (params.interval_padding == 15) {
+        if (params.kit && params.genomes[params.assembly].panels[panel_name].coverages_ip15[params.kit]) {
+            cov = file(params.genomes[params.assembly].panels[panel_name].coverages_ip15[params.kit])
+            options = "--ref ${cov}"
+            merge_options = "PADDING=15"
+        }    
+    } else {
+        if (params.kit && params.genomes[params.assembly].panels[panel_name].coverages[params.kit]) {
+            cov = file(params.genomes[params.assembly].panels[panel_name].coverages[params.kit])
+            options = "--ref ${cov}"
+        }
     }
     // do something here - get coverage and build an XLS sheet
     // First we identify which analysed exons are actually part of the exome kit target definition.
@@ -35,7 +45,7 @@ process PICARD_COLLECT_HS_METRICS_PANEL {
         INPUT=$panel \
         SECOND_INPUT=$targets \
         ACTION=SUBTRACT \
-        OUTPUT=overlaps.interval_list
+        OUTPUT=overlaps.interval_list $merge_options
 
     picard -Xmx${task.memory.toGiga()}G CollectHsMetrics \
         INPUT=${bam} \

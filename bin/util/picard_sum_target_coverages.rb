@@ -1,4 +1,4 @@
-files = Dir["*selection_per_target_metrics.txt"]
+files = Dir["*per_target.coverages.txt"]
 
 bucket = {}
 

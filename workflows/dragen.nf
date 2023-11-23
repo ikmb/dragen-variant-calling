@@ -23,7 +23,7 @@ if (params.exome) {
     } else if (params.genomes[params.assembly].kits[params.kit].cnv_panel) {
         ch_cnv_panel = Channel.fromPath(params.genomes[params.assembly].kits[params.kit].cnv_panel).collect()
     } else {
-        ch_cnv_panel = Channel.value([])
+        ch_cnv_panel = Channel.value([]).collect()
     }
 
     // Specific target panels
@@ -52,12 +52,12 @@ if (params.exome) {
     params.out_index = "crai"
 
     bed_file = params.bed ?: params.genomes[params.assembly].bed
-    ch_bed = Channel.fromPath(bed_file)
+    ch_bed = Channel.fromPath(file(bed_file, checkIfExists: true)).collect()
 
     ch_targets = Channel.empty()
     ch_baits = Channel.empty()
 
-    ch_cnv_panel = Channel.from([])
+    ch_cnv_panel = Channel.value([])
 } 
 
 if (params.expansion_hunter ) {  params.expansion_json = params.genomes[params.assembly].expansion_catalog } else {  params.expansion_json = null }
@@ -71,22 +71,22 @@ if (params.genomes[params.assembly].ml_dir) { params.ml_dir = params.genomes[par
 // Subworkflows and modules
 // ******************************
 
-include { WGS_QC } from "./../subworkflows/wgs_qc"
-include { EXOME_QC } from "./../subworkflows/exome_qc"
-include { DRAGEN_SINGLE_SAMPLE } from "./../subworkflows/dragen/single_sample"
-include { DRAGEN_TRIO_CALLING } from "./../subworkflows/dragen/trio_calling"
-include { DRAGEN_JOINT_CALLING } from "./../subworkflows/dragen/joint_calling"
-include { WHATSHAP } from "./../modules/whatshap"
-include { VEP_ANNOTATE } from "./../subworkflows/vep_annotate"
+include { WGS_QC }                  from "./../subworkflows/wgs_qc"
+include { EXOME_QC }                from "./../subworkflows/exome_qc"
+include { DRAGEN_SINGLE_SAMPLE }    from "./../subworkflows/dragen/single_sample"
+include { DRAGEN_TRIO_CALLING }     from "./../subworkflows/dragen/trio_calling"
+include { DRAGEN_JOINT_CALLING }    from "./../subworkflows/dragen/joint_calling"
+include { WHATSHAP }                from "./../modules/whatshap"
+include { VEP_ANNOTATE }            from "./../subworkflows/vep_annotate"
 include { PICARD_INTERVAL_LIST_TO_BED } from "./../modules/picard/interval_list_to_bed"
-include { BCFTOOLS_STATS } from "./../modules/bcftools/stats"
-include { VALIDATE_SAMPLESHEET } from "./../modules/validate_samplesheet"
+include { BCFTOOLS_STATS }          from "./../modules/bcftools/stats"
+include { VALIDATE_SAMPLESHEET }    from "./../modules/validate_samplesheet"
 include { MULTIQC; MULTIQC_FASTQC } from "./../modules/multiqc/main.nf"
-include { DRAGEN_USAGE } from "./../modules/logging/main.nf"
-include { VERSIONS } from "./../subworkflows/versions"
-include { PANEL_QC } from "./../subworkflows/panel_qc"
-include { ID_CHECK } from "./../subworkflows/id_check"
-include { FASTQC } from "./../modules/fastqc"
+include { DRAGEN_USAGE }            from "./../modules/logging/main.nf"
+include { VERSIONS }                from "./../subworkflows/versions"
+include { PANEL_QC }                from "./../subworkflows/panel_qc"
+include { ID_CHECK }                from "./../subworkflows/id_check"
+include { FASTQC }                  from "./../modules/fastqc"
 
 // ************************************************
 // Pipeline input(s)
@@ -117,13 +117,13 @@ workflow DRAGEN_VARIANT_CALLING {
         ch_samples
             .splitCsv ( header: true, sep: ',')
             .map { create_fastq_channel(it) }
-            .set { ch_reads }        
+            .set { ch_reads }
             
         if (params.exome) {
             PICARD_INTERVAL_LIST_TO_BED(ch_targets)
-            ch_bed_intervals = PICARD_INTERVAL_LIST_TO_BED.out.bed
+            ch_bed_intervals = PICARD_INTERVAL_LIST_TO_BED.out.bed.collect()
         } else {
-            ch_bed_intervals = ch_bed
+            ch_bed_intervals = ch_bed.collect()
         }
 
         // Read-QC prior
