@@ -7,7 +7,7 @@ process PICARD_COLLECT_HS_METRICS_PANEL {
     publishDir "${params.outdir}/Summary/Panel/PanelCoverage", mode: "copy"
 
     input:
-    tuple val(meta),path(bam),path(bai),val(panel_name),path(panel)
+    tuple val(meta),path(bam),path(bai),val(panel_name),path(panel),val(cov)
     path(targets)
 
     output:
@@ -20,23 +20,17 @@ process PICARD_COLLECT_HS_METRICS_PANEL {
     target_coverage = "${meta.patient_id}_${meta.sample_id}.${panel_name}.per_target.hs_metrics.txt"
     target_coverage_xls = "${meta.patient_id}_${meta.sample_id}.${panel_name}.per_target.hs_metrics_mqc.xlsx"
 
-    // optionally support a kill list of known bad exons
     def options = ""
     def merge_options = ""
-    def cov = ""
-    // We have pre-computed panel coverages for non-padded panels and for a padding value of 15 - check which one to use
-    if (params.interval_padding == 15) {
-        if (params.kit && params.genomes[params.assembly].panels[panel_name].coverages_ip15[params.kit]) {
-            cov = file(params.genomes[params.assembly].panels[panel_name].coverages_ip15[params.kit])
-            options = "--ref ${cov}"
-            merge_options = "PADDING=15"
-        }    
-    } else {
-        if (params.kit && params.genomes[params.assembly].panels[panel_name].coverages[params.kit]) {
-            cov = file(params.genomes[params.assembly].panels[panel_name].coverages[params.kit])
-            options = "--ref ${cov}"
-        }
+    // if reference coverages are provided, set here
+    if (cov) {
+        options = "--ref ${cov}"
     }
+    // If a specific pading value is set, use this
+    if (params.interval_padding == 15) {
+            merge_options = "PADDING=15"
+    }    
+    def padded_panel = panel.getBaseName() + ".padded_${params.interval_padding}bp.interval_list"
     // do something here - get coverage and build an XLS sheet
     // First we identify which analysed exons are actually part of the exome kit target definition.
     """
@@ -47,11 +41,17 @@ process PICARD_COLLECT_HS_METRICS_PANEL {
         ACTION=SUBTRACT \
         OUTPUT=overlaps.interval_list $merge_options
 
+     picard -Xmx${task.memory.toGiga()}G IntervalListTools \
+        INPUT=$panel \
+        ACTION=CONCAT \
+        PADDING=${params.interval_padding} \
+        OUTPUT=$padded_panel
+
     picard -Xmx${task.memory.toGiga()}G CollectHsMetrics \
         INPUT=${bam} \
         OUTPUT=${coverage} \
-        TARGET_INTERVALS=${panel} \
-        BAIT_INTERVALS=${panel} \
+        TARGET_INTERVALS=${padded_panel} \
+        BAIT_INTERVALS=${padded_panel} \
         CLIP_OVERLAPPING_READS=false \
         REFERENCE_SEQUENCE=${params.ref} \
         TMP_DIR=tmp \

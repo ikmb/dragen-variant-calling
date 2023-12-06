@@ -28,17 +28,22 @@ if (params.exome) {
 
     // Specific target panels
     if (params.panel) {
+        panel_list = []
         panel = params.genomes[params.assembly].panels[params.panel].intervals
-        ch_panels = Channel.from( [ params.panel, file(panel, checkIfExists: true) ] )
+        cov = (params.interval_padding == 15) ? file(params.genomes[params.assembly].panels[params.panel].coverage_ip15) : file(params.genomes[params.assembly].panels[params.panel].coverage)
+        panel_list << [ params.panel, file(panel, checkIfExists: true), cov ]
+        ch_panels = Channel.fromList(panel_list)
     } else if (params.panel_intervals) {
-        Channel.from([ "Custom",file(params.panel_intervals,checkIfExists: true)])
-        .set { ch_panels }
+        panel_list = []
+        panel_list << [ "Custom",file(params.panel_intervals,checkIfExists: true),null]
+        ch_panels = Channel.fromList(panel_list)
     } else if (params.all_panels) {
         panel_list = []
         panel_names = params.genomes[params.assembly].panels.keySet()
         panel_names.each {
             interval = params.genomes[params.assembly].panels[it].intervals
-            panel_list << [ it,file(interval) ]
+            cov = (params.interval_padding == 15) ? file(params.genomes[params.assembly].panels[it].coverage_ip15) : file(params.genomes[params.assembly].panels[it].coverage)
+            panel_list << [ it,file(interval),cov ]
         }
         ch_panels = Channel.fromList(panel_list)
     } else {
