@@ -10,8 +10,12 @@ workflow PANEL_QC {
 
 	main:
 
+        ch_bam_panel = bam.combine(panels)
+
+	//ch_bam_panel.view()
+
         PICARD_COLLECT_HS_METRICS_PANEL(
-            bam.combine(panels),
+            ch_bam_panel,
             targets.collect()
         )
         MULTIQC_PANEL(
